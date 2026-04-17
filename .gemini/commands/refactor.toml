@@ -1,0 +1,10 @@
+description = "Planeja ou executa uma refatoração delimitada usando a habilidade canônica refactor."
+prompt = """
+Use `.agents/skills/refactor/SKILL.md` como fluxo canônico desta tarefa.
+Leia os assets referenciados sob demanda, especialmente `.agents/skills/refactor/assets/refactor-report-template.md`.
+Se revisão for necessária, use `.agents/skills/review/SKILL.md` como processo de revisão.
+Não invente um processo paralelo neste comando.
+
+Aplicar a habilidade a esta solicitação:
+{{args}}
+"""

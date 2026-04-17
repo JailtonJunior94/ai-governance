@@ -1,0 +1,9 @@
+description = "Analisa o projeto e gera arquivos de governanca personalizados para trabalho com IA."
+prompt = """
+Use `.agents/skills/analyze-project/SKILL.md` como fluxo canonico desta tarefa.
+Leia os assets referenciados sob demanda em `.agents/skills/analyze-project/assets/`.
+Nao invente um processo paralelo neste comando.
+
+Aplicar a habilidade a esta solicitacao:
+{{args}}
+"""

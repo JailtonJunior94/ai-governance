@@ -10,3 +10,5 @@ Use `AGENTS.md` como instrucao principal deste repositorio.
 4. Carregar referencias adicionais apenas quando a tarefa exigir.
 5. Preservar estilo, arquitetura e fronteiras existentes antes de propor mudancas.
 6. Validar mudancas com comandos proporcionais ao risco.
+
+{{SECAO_STACK}}

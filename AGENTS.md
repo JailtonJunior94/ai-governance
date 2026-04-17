@@ -30,11 +30,11 @@ Use estas instruções para manter consistência, segurança e qualidade ao trab
 
 Para tarefas que alteram código, carregar a skill:
 
-- `.agents/skills/governanca-agentes/SKILL.md`
+- `.agents/skills/agent-governance/SKILL.md`
 
 Para tarefas que alteram código Go, carregar também:
 
-- `.agents/skills/implementacao-go/SKILL.md`
+- `.agents/skills/go-implementation/SKILL.md`
 
 Para tarefas de revisão ou refatoração incremental de design em Go guiadas por heurísticas de object calisthenics, carregar também:
 
@@ -50,37 +50,38 @@ Essa skill define:
 
 Ler conforme necessidade:
 
-- `.agents/skills/governanca-agentes/references/ddd.md`
-- `.agents/skills/governanca-agentes/references/error-handling.md`
-- `.agents/skills/governanca-agentes/references/security.md`
-- `.agents/skills/governanca-agentes/references/tests.md`
+- `.agents/skills/agent-governance/references/ddd.md`
+- `.agents/skills/agent-governance/references/error-handling.md`
+- `.agents/skills/agent-governance/references/security.md`
+- `.agents/skills/agent-governance/references/tests.md`
 
 ## Referências da Skill Go
 
 Ler conforme necessidade:
 
-- `.agents/skills/implementacao-go/references/governanca.md`
-- `.agents/skills/implementacao-go/references/arquitetura.md`
-- `.agents/skills/implementacao-go/references/go-standards.md`
-- `.agents/skills/implementacao-go/references/interfaces.md`
-- `.agents/skills/implementacao-go/references/generics.md`
-- `.agents/skills/implementacao-go/references/concorrencia.md`
-- `.agents/skills/implementacao-go/references/design-patterns.md`
-- `.agents/skills/implementacao-go/references/observability.md`
-- `.agents/skills/implementacao-go/references/api.md`
-- `.agents/skills/implementacao-go/references/persistence.md`
-- `.agents/skills/implementacao-go/references/configuration.md`
-- `.agents/skills/implementacao-go/references/resiliencia.md`
-- `.agents/skills/implementacao-go/references/messaging.md`
-- `.agents/skills/implementacao-go/references/exemplos-implementacao.md`
+- `.agents/skills/go-implementation/references/governance.md`
+- `.agents/skills/go-implementation/references/architecture.md`
+- `.agents/skills/go-implementation/references/go-standards.md`
+- `.agents/skills/go-implementation/references/interfaces.md`
+- `.agents/skills/go-implementation/references/generics.md`
+- `.agents/skills/go-implementation/references/concurrency.md`
+- `.agents/skills/go-implementation/references/design-patterns.md`
+- `.agents/skills/go-implementation/references/observability.md`
+- `.agents/skills/go-implementation/references/api.md`
+- `.agents/skills/go-implementation/references/persistence.md`
+- `.agents/skills/go-implementation/references/configuration.md`
+- `.agents/skills/go-implementation/references/resilience.md`
+- `.agents/skills/go-implementation/references/messaging.md`
+- `.agents/skills/go-implementation/references/implementation-examples.md`
+- `.agents/skills/go-implementation/references/build.md`
 
 ## Referências da Skill Object Calisthenics Go
 
 Ler conforme necessidade:
 
-- `.agents/skills/object-calisthenics-go/references/regras.md`
-- `.agents/skills/object-calisthenics-go/references/mapeamento-go.md`
-- `.agents/skills/object-calisthenics-go/references/roteiro-avaliacao.md`
+- `.agents/skills/object-calisthenics-go/references/rules.md`
+- `.agents/skills/object-calisthenics-go/references/go-mapping.md`
+- `.agents/skills/object-calisthenics-go/references/evaluation-guide.md`
 
 ## Validação
 

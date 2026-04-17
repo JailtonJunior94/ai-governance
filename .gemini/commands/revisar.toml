@@ -1,8 +1,0 @@
-description = "Revisa um diff usando a habilidade canônica revisar."
-prompt = """
-Use `.agents/skills/revisar/SKILL.md` como fluxo canônico desta tarefa.
-Não invente um processo paralelo neste comando.
-
-Aplicar a habilidade a esta solicitação:
-{{args}}
-"""

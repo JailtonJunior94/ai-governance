@@ -1,9 +1,0 @@
-description = "Analisa o projeto e gera arquivos de governanca IA-First personalizados."
-prompt = """
-Use `.agents/skills/analisar-projeto/SKILL.md` como fluxo canonico desta tarefa.
-Leia os assets referenciados sob demanda em `.agents/skills/analisar-projeto/assets/`.
-Nao invente um processo paralelo neste comando.
-
-Aplicar a habilidade a esta solicitacao:
-{{args}}
-"""

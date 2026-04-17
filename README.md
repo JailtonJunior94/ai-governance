@@ -8,14 +8,14 @@ O instalador agora gera `AGENTS.md` e os adaptadores de forma contextual a parti
 
 ```
 .agents/skills/                          <- fonte canonica de toda habilidade
-  criar-prd/                             <- PRD de produto
-  criar-especificacao-tecnica/           <- techspec e ADRs
-  criar-tarefas/                         <- decomposicao em tarefas
-  executar-tarefa/                       <- implementacao com evidencias
-  refatorar/                             <- refatoracao segura
-  revisar/                               <- revisao de codigo
-  governanca-agentes/                    <- regras transversais (DDD, seguranca, erros, testes)
-  implementacao-go/                      <- regras e referencias para Go
+  create-prd/                            <- PRD de produto
+  create-technical-specification/        <- especificacao tecnica e ADRs
+  create-tasks/                          <- decomposicao em tarefas
+  execute-task/                          <- implementacao com evidencias
+  refactor/                              <- refatoracao segura
+  review/                                <- revisao de codigo
+  agent-governance/                      <- regras transversais (DDD, seguranca, erros, testes)
+  go-implementation/                     <- regras e referencias para Go
   object-calisthenics-go/                <- heuristicas de object calisthenics adaptadas para Go
 
 AGENTS.md                                <- regra canonica compartilhada
@@ -25,18 +25,18 @@ GEMINI.md                                <- adaptador para Gemini CLI
 .codex/config.toml                       <- ativacao de skills no Codex
 
 .claude/skills/                          <- symlinks -> .agents/skills/
-.claude/agents/                          <- thin wrappers (subagentes)
-.claude/rules/                           <- governance cross-cutting
+.claude/agents/                          <- wrappers leves (subagentes)
+.claude/rules/                           <- governanca transversal
 
-.gemini/commands/                        <- thin wrappers para Gemini CLI
-.github/agents/                          <- thin wrappers para Copilot CLI
+.gemini/commands/                        <- wrappers leves para Gemini CLI
+.github/agents/                          <- wrappers leves para Copilot CLI
 ```
 
 ## Contrato de Portabilidade
 
 - **Fonte de verdade procedural**: `.agents/skills/`
 - **Regras canonicas**: `AGENTS.md`
-- **Adaptadores por plataforma**: thin wrappers que referenciam a habilidade canonica
+- **Adaptadores por plataforma**: wrappers leves que referenciam a habilidade canonica
   - Claude Code: `.claude/skills/` (symlinks), `.claude/agents/`
   - Codex: `.codex/config.toml`
   - Copilot CLI: `.github/copilot-instructions.md`, `.github/agents/`
@@ -54,6 +54,39 @@ Uso padrao:
 bash install.sh /caminho/do/projeto
 ```
 
+Exemplo em projeto novo:
+
+```bash
+mkdir -p /caminho/projetos/meu-servico
+cd /caminho/projetos/meu-servico
+
+bash /Users/jailtonjunior/Git/rules/install.sh .
+```
+
+Quando o instalador perguntar pelas ferramentas, voce pode selecionar, por exemplo:
+
+```text
+Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: A
+```
+
+Esse fluxo e util para preparar um repositorio novo antes de iniciar PRD, tech spec, tarefas e execucao.
+
+Exemplo em projeto existente:
+
+```bash
+cd /caminho/projetos/sistema-legado
+
+bash /Users/jailtonjunior/Git/rules/install.sh .
+```
+
+Se quiser instalar apenas para Codex e Claude Code no projeto atual:
+
+```text
+Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: 1 3
+```
+
+Esse fluxo preserva o projeto existente e adiciona apenas os arquivos e adaptadores de governanca para as ferramentas selecionadas.
+
 Opcoes uteis:
 
 - `LINK_MODE=symlink`: modo padrao, mais economico para manter uma unica fonte de verdade.
@@ -65,6 +98,14 @@ Exemplo portavel:
 
 ```bash
 LINK_MODE=copy bash install.sh /caminho/do/projeto
+```
+
+Exemplo portavel em um projeto existente:
+
+```bash
+cd /caminho/projetos/api-existente
+
+LINK_MODE=copy bash /Users/jailtonjunior/Git/rules/install.sh .
 ```
 
 ---
@@ -82,31 +123,31 @@ Gera um documento de requisitos de produto a partir de uma descricao de funciona
 **Claude Code**
 
 ```
-/criar-prd Implementar sistema de notificacoes push para o app mobile
+/create-prd Implementar sistema de notificacoes push para o app mobile
 ```
 
 ou via subagente:
 
 ```
-@redator-prd Criar PRD para sistema de notificacoes push com suporte a iOS e Android
+@prd-writer Criar PRD para sistema de notificacoes push com suporte a iOS e Android
 ```
 
 **GitHub Copilot CLI**
 
 ```
-@redator-prd Criar PRD para sistema de notificacoes push com suporte a iOS e Android
+@prd-writer Criar PRD para sistema de notificacoes push com suporte a iOS e Android
 ```
 
 **Gemini CLI**
 
 ```
-/criar-prd Implementar sistema de notificacoes push para o app mobile
+/create-prd Implementar sistema de notificacoes push para o app mobile
 ```
 
 **Codex CLI**
 
 ```
-Leia .agents/skills/criar-prd/SKILL.md e gere um PRD para sistema de notificacoes push
+Leia .agents/skills/create-prd/SKILL.md e gere um PRD para sistema de notificacoes push
 ```
 
 ---
@@ -118,31 +159,31 @@ Gera especificacao tecnica e ADRs a partir de um PRD aprovado.
 **Claude Code**
 
 ```
-/criar-especificacao-tecnica Gerar techspec baseado no PRD docs/prd-notificacoes.md
+/create-technical-specification Gerar techspec baseado no PRD docs/prd-notificacoes.md
 ```
 
 ou via subagente:
 
 ```
-@redator-especificacao-tecnica Criar techspec para o PRD docs/prd-notificacoes.md
+@technical-specification-writer Criar techspec para o PRD docs/prd-notificacoes.md
 ```
 
 **GitHub Copilot CLI**
 
 ```
-@redator-especificacao-tecnica Criar techspec para o PRD docs/prd-notificacoes.md
+@technical-specification-writer Criar techspec para o PRD docs/prd-notificacoes.md
 ```
 
 **Gemini CLI**
 
 ```
-/criar-especificacao-tecnica Gerar techspec baseado no PRD docs/prd-notificacoes.md
+/create-technical-specification Gerar techspec baseado no PRD docs/prd-notificacoes.md
 ```
 
 **Codex CLI**
 
 ```
-Leia .agents/skills/criar-especificacao-tecnica/SKILL.md e gere a techspec para docs/prd-notificacoes.md
+Leia .agents/skills/create-technical-specification/SKILL.md e gere a techspec para docs/prd-notificacoes.md
 ```
 
 ---
@@ -154,31 +195,31 @@ Decompoe PRD e techspec aprovados em tarefas ordenadas de implementacao.
 **Claude Code**
 
 ```
-/criar-tarefas Gerar tarefas a partir de docs/prd-notificacoes.md e docs/techspec-notificacoes.md
+/create-tasks Gerar tarefas a partir de docs/prd-notificacoes.md e docs/techspec-notificacoes.md
 ```
 
 ou via subagente:
 
 ```
-@planejador-tarefas Decompor em tarefas o PRD docs/prd-notificacoes.md com techspec docs/techspec-notificacoes.md
+@task-planner Decompor em tarefas o PRD docs/prd-notificacoes.md com techspec docs/techspec-notificacoes.md
 ```
 
 **GitHub Copilot CLI**
 
 ```
-@planejador-tarefas Decompor em tarefas o PRD docs/prd-notificacoes.md com techspec docs/techspec-notificacoes.md
+@task-planner Decompor em tarefas o PRD docs/prd-notificacoes.md com techspec docs/techspec-notificacoes.md
 ```
 
 **Gemini CLI**
 
 ```
-/criar-tarefas Gerar tarefas a partir de docs/prd-notificacoes.md e docs/techspec-notificacoes.md
+/create-tasks Gerar tarefas a partir de docs/prd-notificacoes.md e docs/techspec-notificacoes.md
 ```
 
 **Codex CLI**
 
 ```
-Leia .agents/skills/criar-tarefas/SKILL.md e gere tarefas para docs/prd-notificacoes.md e docs/techspec-notificacoes.md
+Leia .agents/skills/create-tasks/SKILL.md e gere tarefas para docs/prd-notificacoes.md e docs/techspec-notificacoes.md
 ```
 
 ---
@@ -190,38 +231,38 @@ Implementa uma tarefa aprovada com codificacao, testes e captura de evidencias.
 **Claude Code**
 
 ```
-/executar-tarefa Implementar a tarefa docs/tasks/task-001.md
+/execute-task Implementar a tarefa docs/tasks/task-001.md
 ```
 
 ou via subagente:
 
 ```
-@executor-tarefa Executar docs/tasks/task-001.md
+@task-executor Executar docs/tasks/task-001.md
 ```
 
 **GitHub Copilot CLI**
 
 ```
-@executor-tarefa Executar docs/tasks/task-001.md
+@task-executor Executar docs/tasks/task-001.md
 ```
 
 **Gemini CLI**
 
 ```
-/executar-tarefa Implementar a tarefa docs/tasks/task-001.md
+/execute-task Implementar a tarefa docs/tasks/task-001.md
 ```
 
 **Codex CLI**
 
 ```
-Leia .agents/skills/executar-tarefa/SKILL.md e implemente docs/tasks/task-001.md
+Leia .agents/skills/execute-task/SKILL.md e implemente docs/tasks/task-001.md
 ```
 
 ---
 
 ### Object Calisthenics Go
 
-Aplica heuristicas de object calisthenics de forma incremental e idiomatica em codigo Go, com foco em review e refatoracao segura.
+Aplica heuristicas de object calisthenics de forma incremental e idiomatica em codigo Go, com foco em revisao e refatoracao segura.
 
 **Codex CLI**
 
@@ -242,31 +283,31 @@ Planeja ou executa refatoracoes seguras preservando comportamento.
 **Claude Code**
 
 ```
-/refatorar Extrair duplicacao do handler de pagamentos em internal/payment/handler.go
+/refactor Extrair duplicacao do handler de pagamentos em internal/payment/handler.go
 ```
 
 ou via subagente:
 
 ```
-@refatorador Refatorar internal/payment/handler.go extraindo duplicacao
+@refactorer Refatorar internal/payment/handler.go extraindo duplicacao
 ```
 
 **GitHub Copilot CLI**
 
 ```
-@refatorador Refatorar internal/payment/handler.go extraindo duplicacao
+@refactorer Refatorar internal/payment/handler.go extraindo duplicacao
 ```
 
 **Gemini CLI**
 
 ```
-/refatorar Extrair duplicacao do handler de pagamentos em internal/payment/handler.go
+/refactor Extrair duplicacao do handler de pagamentos em internal/payment/handler.go
 ```
 
 **Codex CLI**
 
 ```
-Leia .agents/skills/refatorar/SKILL.md e refatore internal/payment/handler.go extraindo duplicacao
+Leia .agents/skills/refactor/SKILL.md e refatore internal/payment/handler.go extraindo duplicacao
 ```
 
 ---
@@ -278,31 +319,31 @@ Revisa um diff quanto a correcao, seguranca, regressoes e testes faltantes.
 **Claude Code**
 
 ```
-/revisar Revisar as mudancas da branch feat/notificacoes
+/review Revisar as mudancas da branch feat/notificacoes
 ```
 
 ou via subagente:
 
 ```
-@revisor Revisar diff da branch feat/notificacoes contra main
+@reviewer Revisar diff da branch feat/notificacoes contra main
 ```
 
 **GitHub Copilot CLI**
 
 ```
-@revisor Revisar diff da branch feat/notificacoes contra main
+@reviewer Revisar diff da branch feat/notificacoes contra main
 ```
 
 **Gemini CLI**
 
 ```
-/revisar Revisar as mudancas da branch feat/notificacoes
+/review Revisar as mudancas da branch feat/notificacoes
 ```
 
 **Codex CLI**
 
 ```
-Leia .agents/skills/revisar/SKILL.md e revise o diff da branch feat/notificacoes contra main
+Leia .agents/skills/review/SKILL.md e revise o diff da branch feat/notificacoes contra main
 ```
 
 ---
@@ -313,24 +354,24 @@ Exemplo end-to-end usando Claude Code:
 
 ```bash
 # 1. Criar o PRD
-/criar-prd Implementar cache distribuido com Redis para o servico de catalogo
+/create-prd Implementar cache distribuido com Redis para o servico de catalogo
 
 # 2. Gerar a especificacao tecnica
-/criar-especificacao-tecnica Gerar techspec baseado no PRD docs/prd-cache-catalogo.md
+/create-technical-specification Gerar techspec baseado no PRD docs/prd-cache-catalogo.md
 
 # 3. Decompor em tarefas
-/criar-tarefas Gerar tarefas a partir de docs/prd-cache-catalogo.md e docs/techspec-cache-catalogo.md
+/create-tasks Gerar tarefas a partir de docs/prd-cache-catalogo.md e docs/techspec-cache-catalogo.md
 
 # 4. Executar cada tarefa
-/executar-tarefa Implementar docs/tasks/task-001.md
-/executar-tarefa Implementar docs/tasks/task-002.md
+/execute-task Implementar docs/tasks/task-001.md
+/execute-task Implementar docs/tasks/task-002.md
 
 # 5. Revisar antes do merge
-/revisar Revisar as mudancas da branch feat/cache-catalogo
+/review Revisar as mudancas da branch feat/cache-catalogo
 ```
 
-O mesmo fluxo no Gemini CLI segue a mesma sequencia com os comandos `/criar-prd`, `/criar-especificacao-tecnica`, `/criar-tarefas`, `/executar-tarefa` e `/revisar`.
+O mesmo fluxo no Gemini CLI segue a mesma sequencia com os comandos `/create-prd`, `/create-technical-specification`, `/create-tasks`, `/execute-task` e `/review`.
 
-No Copilot CLI, use os agentes `@redator-prd`, `@redator-especificacao-tecnica`, `@planejador-tarefas`, `@executor-tarefa` e `@revisor`.
+No Copilot CLI, use os agentes `@prd-writer`, `@technical-specification-writer`, `@task-planner`, `@task-executor` e `@reviewer`.
 
 No Codex CLI, prefixe cada passo com a leitura da SKILL.md correspondente em `.agents/skills/`.

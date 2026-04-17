@@ -9,21 +9,22 @@ Definir precedência, resolução de conflitos e critérios de evidência para u
 
 ## Fonte de Verdade
 - Processos detalhados: `.agents/skills/`
-- Regras cross-cutting: `.claude/rules/`
-- Referências de governança: `.agents/skills/governanca-agentes/references/`
-- Referências Go: `.agents/skills/implementacao-go/references/`
+- Regras transversais: `.claude/rules/`
+- Referências de governança: `.agents/skills/agent-governance/references/`
+- Referências Go: `.agents/skills/go-implementation/references/`
 
 ## Precedência
-1. Esta governance (cross-cutting)
-2. `.agents/skills/governanca-agentes/references/security.md`
-3. References de arquitetura e implementação carregadas pela skill ativa
-4. `.agents/skills/governanca-agentes/references/` (ddd, error-handling, tests)
-5. Uber Go Style Guide PT-BR como baseline transversal (quando aplicável)
+1. Esta governança transversal
+2. `.agents/skills/agent-governance/references/security.md`
+3. Referências de arquitetura e implementação carregadas pela skill ativa
+4. `.agents/skills/agent-governance/references/` (`ddd`, `error-handling`, `tests`)
+5. Uber Go Style Guide PT-BR como base transversal (quando aplicável)
 
 Se duas regras do mesmo nível conflitarem:
 - prevalece `hard` sobre `guideline`
 - se a severidade empatar, prevalece a regra mais restritiva para correção, segurança e determinismo
-- convenção explícita local prevalece sobre o guia da Uber quando documentada nas references
+- convenção explícita local prevalece sobre o guia da Uber quando documentada nas referências
+- `go-implementation` prevalece sobre `object-calisthenics-go` quando houver conflito (ex: tipos concretos vs wrapping adicional) — object calisthenics é ferramenta de revisão e heurística de design, não substitui as diretrizes de implementação
 
 ## Política de Evidência
 - Toda alteração deve ser justificável pelo PRD, por regra explícita ou por necessidade técnica demonstrável.

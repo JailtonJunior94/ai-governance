@@ -1,35 +1,35 @@
 [[skills.config]]
-path = ".agents/skills/governanca-agentes"
+path = ".agents/skills/agent-governance"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/implementacao-go"
+path = ".agents/skills/go-implementation"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/analisar-projeto"
+path = ".agents/skills/analyze-project"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/criar-prd"
+path = ".agents/skills/create-prd"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/criar-especificacao-tecnica"
+path = ".agents/skills/create-technical-specification"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/criar-tarefas"
+path = ".agents/skills/create-tasks"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/executar-tarefa"
+path = ".agents/skills/execute-task"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/refatorar"
+path = ".agents/skills/refactor"
 enabled = true
 
 [[skills.config]]
-path = ".agents/skills/revisar"
+path = ".agents/skills/review"
 enabled = true

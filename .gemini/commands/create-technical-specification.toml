@@ -1,0 +1,11 @@
+description = "Redige ou atualiza uma especificação técnica usando a habilidade canônica create-technical-specification."
+prompt = """
+Use `.agents/skills/create-technical-specification/SKILL.md` como fluxo canônico desta tarefa.
+Leia os assets referenciados sob demanda, especialmente:
+- `.agents/skills/create-technical-specification/assets/techspec-template.md`
+- `.agents/skills/create-technical-specification/assets/adr-template.md`
+Não invente um processo paralelo neste comando.
+
+Aplicar a habilidade a esta solicitação:
+{{args}}
+"""

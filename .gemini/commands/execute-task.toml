@@ -1,0 +1,10 @@
+description = "Executa uma tarefa aprovada usando a habilidade canônica execute-task."
+prompt = """
+Use `.agents/skills/execute-task/SKILL.md` como fluxo canônico desta tarefa.
+Leia os assets referenciados sob demanda, especialmente `.agents/skills/execute-task/assets/task-execution-report-template.md`.
+Se revisão for necessária, use `.agents/skills/review/SKILL.md` como processo de revisão.
+Não invente um processo paralelo neste comando.
+
+Aplicar a habilidade a esta solicitação:
+{{args}}
+"""

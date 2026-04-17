@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Instala a governança IA-First em um projeto alvo.
-# Uso: bash install.sh [diretório-destino]
-# Se omitido, usa o diretório atual.
-# O script pergunta quais ferramentas instalar.
+# Instala o pacote de governanca para IA em um projeto alvo.
+# Uso: bash install.sh [diretorio-alvo]
+# Se omitido, o diretorio atual sera usado.
+# O script pergunta quais ferramentas devem ser instaladas.
 
 set -euo pipefail
 
@@ -11,14 +11,14 @@ PROJECT_DIR="${1:-.}"
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 LINK_MODE="${LINK_MODE:-symlink}"
 GENERATE_CONTEXTUAL_GOVERNANCE="${GENERATE_CONTEXTUAL_GOVERNANCE:-1}"
-GOVERNANCE_GENERATOR="$RULES_DIR/.agents/skills/analisar-projeto/scripts/generate-governance.sh"
+GOVERNANCE_GENERATOR="$RULES_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
 
 if [[ "$RULES_DIR" == "$PROJECT_DIR" ]]; then
-  echo "ERRO: o diretório destino não pode ser o próprio repositório de regras."
+  echo "ERRO: o diretorio alvo nao pode ser o proprio repositorio de regras."
   exit 1
 fi
 
-SKILLS=(criar-prd criar-especificacao-tecnica criar-tarefas executar-tarefa refatorar revisar analisar-projeto)
+SKILLS=(create-prd create-technical-specification create-tasks execute-task refactor review analyze-project)
 
 link_or_copy_dir() {
   local source="$1"
@@ -51,7 +51,7 @@ link_or_copy_skill() {
   ln -sfn "$link_target" "$destination"
 }
 
-# ── Seleção de ferramentas ──────────────────────────────────────────
+# Selecao de ferramentas
 INSTALL_CLAUDE=0
 INSTALL_GEMINI=0
 INSTALL_CODEX=0
@@ -65,7 +65,7 @@ echo "  3) codex"
 echo "  4) copilot"
 echo "  A) Todas"
 echo ""
-read -rp "Digite os números separados por espaço (ex: 1 3) ou A para todas: " selection
+read -rp "Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: " selection
 
 case "$selection" in
   [aA]|"")
@@ -78,14 +78,14 @@ case "$selection" in
         2) INSTALL_GEMINI=1 ;;
         3) INSTALL_CODEX=1 ;;
         4) INSTALL_COPILOT=1 ;;
-        *) echo "AVISO: opção '$num' ignorada (inválida)." ;;
+        *) echo "AVISO: opcao '$num' ignorada (invalida)." ;;
       esac
     done
     ;;
 esac
 
 if [[ $((INSTALL_CLAUDE + INSTALL_GEMINI + INSTALL_CODEX + INSTALL_COPILOT)) -eq 0 ]]; then
-  echo "Nenhuma ferramenta selecionada. Saindo."
+  echo "Nenhuma ferramenta selecionada. Encerrando."
   exit 0
 fi
 
@@ -98,13 +98,13 @@ echo ""
 echo "Ferramentas selecionadas:$selected"
 echo ""
 
-# ── Base comum (AGENTS.md + skills canônicas) ───────────────────────
+# Base comum (AGENTS.md + skills canonicas)
 mkdir -p "$PROJECT_DIR/.agents"
 link_or_copy_dir "$RULES_DIR/.agents/skills" "$PROJECT_DIR/.agents/skills"
 
-# ── Claude Code ─────────────────────────────────────────────────────
+# Claude Code
 if [[ $INSTALL_CLAUDE -eq 1 ]]; then
-  echo "→ Instalando Claude Code..."
+  echo "-> Instalando Claude Code..."
   mkdir -p "$PROJECT_DIR/.claude/skills" "$PROJECT_DIR/.claude/agents" "$PROJECT_DIR/.claude/rules" "$PROJECT_DIR/.claude/scripts"
   for skill in "${SKILLS[@]}"; do
     link_or_copy_skill "$RULES_DIR/.agents/skills/$skill" "../../.agents/skills/$skill" "$PROJECT_DIR/.claude/skills/$skill"
@@ -114,23 +114,23 @@ if [[ $INSTALL_CLAUDE -eq 1 ]]; then
   cp "$RULES_DIR/.claude/scripts/validate-task-evidence.sh" "$PROJECT_DIR/.claude/scripts/"
 fi
 
-# ── Gemini CLI ──────────────────────────────────────────────────────
+# Gemini CLI
 if [[ $INSTALL_GEMINI -eq 1 ]]; then
-  echo "→ Instalando Gemini CLI..."
+  echo "-> Instalando Gemini CLI..."
   mkdir -p "$PROJECT_DIR/.gemini/commands"
   cp "$RULES_DIR/.gemini/commands/"*.toml "$PROJECT_DIR/.gemini/commands/"
 fi
 
-# ── Codex ───────────────────────────────────────────────────────────
+# Codex
 if [[ $INSTALL_CODEX -eq 1 ]]; then
-  echo "→ Instalando Codex..."
+  echo "-> Instalando Codex..."
   mkdir -p "$PROJECT_DIR/.codex"
   cp "$RULES_DIR/.codex/config.toml" "$PROJECT_DIR/.codex/config.toml"
 fi
 
-# ── Copilot ─────────────────────────────────────────────────────────
+# Copilot
 if [[ $INSTALL_COPILOT -eq 1 ]]; then
-  echo "→ Instalando Copilot..."
+  echo "-> Instalando Copilot..."
   mkdir -p "$PROJECT_DIR/.github/skills" "$PROJECT_DIR/.github/agents"
   for skill in "${SKILLS[@]}"; do
     link_or_copy_skill "$RULES_DIR/.agents/skills/$skill" "../../.agents/skills/$skill" "$PROJECT_DIR/.github/skills/$skill"
@@ -140,7 +140,7 @@ if [[ $INSTALL_COPILOT -eq 1 ]]; then
 fi
 
 if [[ "$GENERATE_CONTEXTUAL_GOVERNANCE" == "1" ]]; then
-  echo "→ Gerando governanca contextual..."
+  echo "-> Gerando governanca contextual..."
   INSTALL_CLAUDE="$INSTALL_CLAUDE" \
   INSTALL_GEMINI="$INSTALL_GEMINI" \
   INSTALL_COPILOT="$INSTALL_COPILOT" \
@@ -153,5 +153,5 @@ else
 fi
 
 echo ""
-echo "Governança IA-First instalada em: $PROJECT_DIR"
+echo "Governanca para IA instalada em: $PROJECT_DIR"
 echo "Modo de instalacao da base canonica: $LINK_MODE"

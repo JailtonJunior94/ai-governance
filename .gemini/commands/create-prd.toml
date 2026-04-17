@@ -1,0 +1,9 @@
+description = "Redige ou atualiza um PRD usando a habilidade canônica create-prd."
+prompt = """
+Use `.agents/skills/create-prd/SKILL.md` como fluxo canônico desta tarefa.
+Leia os assets referenciados sob demanda, especialmente `.agents/skills/create-prd/assets/prd-template.md`.
+Não invente um processo paralelo neste comando.
+
+Aplicar a habilidade a esta solicitação:
+{{args}}
+"""
