@@ -35,7 +35,9 @@ description: Executa uma tarefa de implementação aprovada por meio de codifica
 3. Rodar os comandos de teste e lint do projeto inteiro quando o escopo da tarefa justificar.
 4. Verificar cada critério de aceitação com evidência explícita.
 5. Invocar a habilidade `review` para o diff produzido e incluir `prd.md` e `techspec.md` como contexto de revisão.
-6. Aceitar apenas `APPROVED` ou `APPROVED_WITH_REMARKS` como veredito de revisão aprovador.
+6. Se `review` retornar `REJECTED` com bugs no formato canônico, invocar a skill `bugfix` para corrigir os achados dentro do escopo da tarefa.
+7. Após `bugfix`, rerodar as validações necessárias e uma nova revisão.
+8. Aceitar apenas `APPROVED` ou `APPROVED_WITH_REMARKS` como veredito de revisão aprovador final.
 
 **Etapa 5: Persistir as evidências**
 1. Ler `assets/task-execution-report-template.md`.

@@ -40,6 +40,10 @@ Para tarefas de revisão ou refatoração incremental de design em Go guiadas po
 
 - `.agents/skills/object-calisthenics-go/SKILL.md`
 
+Para tarefas de correção de bugs com remediação e teste de regressão, carregar também:
+
+- `.agents/skills/bugfix/SKILL.md`
+
 Essa skill define:
 
 - base obrigatória de governança para análise, alteração e validação
@@ -74,6 +78,7 @@ Ler conforme necessidade:
 - `.agents/skills/go-implementation/references/messaging.md`
 - `.agents/skills/go-implementation/references/implementation-examples.md`
 - `.agents/skills/go-implementation/references/build.md`
+- `.agents/skills/go-implementation/references/graceful-lifecycle.md`
 
 ## Referências da Skill Object Calisthenics Go
 

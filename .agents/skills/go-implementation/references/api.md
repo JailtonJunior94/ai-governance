@@ -47,9 +47,7 @@ Manter handlers finos, contratos explícitos e separação clara entre transport
 - Retornar 207 (Multi-Status) quando o resultado for misto (alguns itens ok, outros com erro).
 
 ### Graceful Shutdown
-- Capturar sinais de encerramento (SIGTERM, SIGINT) e drenar conexões ativas.
-- Definir timeout de shutdown explícito.
-- Fechar dependências (banco, filas, cache) na ordem inversa de inicialização.
+- Ver `references/graceful-lifecycle.md` para padrões completos de inicialização e encerramento.
 
 ## Riscos Comuns
 - Handler que cresce para centenas de linhas com lógica misturada.

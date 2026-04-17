@@ -55,6 +55,22 @@ internal/
     handler/
 ```
 
+#### CLI
+```
+cmd/<cli>/main.go              # bootstrap, root command
+internal/
+  cmd/                         # subcommands (cada arquivo = um comando)
+  config/                      # flags, env, config file parsing
+  output/                      # formatação de saída (table, JSON, text)
+  domain/                      # lógica de negócio quando houver
+  infra/                       # clients, filesystem, IO
+```
+- Root command em `main.go` com wiring de subcommands.
+- Cada subcommand em arquivo separado dentro de `internal/cmd/`.
+- Flags e args validados no command, lógica delegada para camada interna.
+- Saída formatada em camada própria — não misturar `fmt.Println` com lógica.
+- Usar `cobra` ou stdlib `flag` conforme complexidade; não impor framework para CLI de 2 comandos.
+
 ### Regras comuns
 - `cmd/` contém apenas bootstrap: config, DI, wiring e start do servidor ou worker.
 - `internal/` impede importação externa e é o default para código de aplicação.

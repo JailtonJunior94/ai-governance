@@ -27,6 +27,16 @@ Manter comunicação assíncrona confiável, rastreável e desacoplada do domín
 - Não depender de ordenação global — usar partition key quando ordem importar dentro de um aggregate.
 - Documentar garantias de ordenação assumidas pelo consumidor.
 
+### Schema Evolution
+- Definir formato de serialização com schema explícito desde o primeiro evento: protobuf, Avro ou JSON Schema.
+- Usar schema registry (Confluent Schema Registry, Buf Schema Registry ou equivalente) quando houver múltiplos producers ou consumers com deploy independente.
+- Aplicar apenas mudanças backward-compatible por padrão: adicionar campos opcionais, não remover ou renomear campos existentes.
+- Para breaking changes, criar novo tópico ou novo event type versionado (`OrderCreatedV2`) — não alterar o schema existente.
+- Consumidores devem ignorar campos desconhecidos (forward compatibility) para tolerar evolução do producer.
+- Versionar schemas com número sequencial ou hash — manter histórico auditável.
+- Validar compatibilidade de schema em CI antes de merge (ex: `buf breaking`, compatibilidade do schema registry).
+- Documentar o contrato de cada evento: campos obrigatórios, opcionais, tipos, valores válidos e regras de deprecação.
+
 ### Observabilidade
 - Propagar trace context nas mensagens para manter tracing distribuído entre producer e consumer.
 - Expor métricas de consumer lag, taxa de processamento e taxa de erro por tópico.
@@ -36,6 +46,7 @@ Manter comunicação assíncrona confiável, rastreável e desacoplada do domín
 - Consumidor não-idempotente com at-least-once delivery causando duplicação de efeito.
 - Consumer lag crescendo silenciosamente sem alerta.
 - Mensagem sem schema versionado quebrando consumidores em deploy independente.
+- Breaking change em schema sem versionamento causando falha silenciosa em consumers.
 
 ## Proibido
 - Publicar evento dentro de transação de banco sem outbox pattern.

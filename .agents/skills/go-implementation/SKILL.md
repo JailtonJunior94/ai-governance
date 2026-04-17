@@ -22,7 +22,7 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 3. Ler `references/concurrency.md` quando a tarefa usar goroutines, channels, cancelamento, worker pools ou sincronizacao.
 4. Ler `references/design-patterns.md` quando a tarefa expor um problema recorrente de desenho que nao seja resolvido com tipos concretos, composicao simples ou extracao de metodo.
 5. Ler `references/observability.md` quando a tarefa envolver logging, tracing, metricas ou health checks.
-6. Ler `references/api.md` quando a tarefa envolver handlers HTTP/gRPC, middlewares, DTOs, serializacao ou graceful shutdown.
+6. Ler `references/api.md` quando a tarefa envolver handlers HTTP/gRPC, middlewares, DTOs ou serializacao.
 7. Ler `references/persistence.md` quando a tarefa envolver repositories, transactions, migrations, queries ou connection management.
 8. Ler `references/configuration.md` quando a tarefa envolver carregamento de configuracao, variáveis de ambiente ou inicializacao de dependencias.
 9. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou protecao contra falhas transitórias.
@@ -31,6 +31,7 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 12. Ler `references/tests.md` quando a tarefa envolver estratégia de testes, integration tests, testcontainers, fixtures ou cobertura.
 13. Ler `references/implementation-examples.md` apenas quando um esqueleto concreto destravar a implementacao ou os testes.
 14. Ler `references/build.md` quando a tarefa envolver Dockerfile, Makefile, pipeline de CI, build flags, imagem de container ou gates de qualidade.
+15. Ler `references/graceful-lifecycle.md` quando a tarefa envolver inicializacao ordenada, shutdown gracioso, handler de sinais, drain de conexoes ou encerramento de goroutines de longa duracao.
 
 **Etapa 3: Modelar a alteracao**
 1. Identificar o menor conjunto seguro de mudancas que satisfaz a solicitacao.

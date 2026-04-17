@@ -37,9 +37,11 @@ description: Planeja ou executa refatorações incrementais seguras preservando 
 
 **Etapa 5: Revisar e persistir evidências**
 1. No modo `execution`, invocar a skill `review` sobre o diff produzido.
-2. Aceitar apenas `APPROVED` ou `APPROVED_WITH_REMARKS` como veredito aprovador.
-3. Ler `assets/refactor-report-template.md`.
-4. Salvar o relatório em `tasks/prd-<feature-slug>/refactor_report.md` quando estiver em contexto de tarefa; caso contrário, em `./refactor_report.md`.
+2. Se `review` retornar `REJECTED` com bugs no formato canônico, invocar a skill `bugfix` para corrigir apenas esses itens dentro do escopo acordado.
+3. Após `bugfix`, rerodar as validações proporcionais e uma nova revisão antes de concluir.
+4. Aceitar apenas `APPROVED` ou `APPROVED_WITH_REMARKS` como veredito aprovador final.
+5. Ler `assets/refactor-report-template.md`.
+6. Salvar o relatório em `tasks/prd-<feature-slug>/refactor_report.md` quando estiver em contexto de tarefa; caso contrário, em `./refactor_report.md`.
 
 **Etapa 6: Retornar o estado final**
 1. Informar modo, validações, veredito do revisor quando aplicável e caminho do relatório.

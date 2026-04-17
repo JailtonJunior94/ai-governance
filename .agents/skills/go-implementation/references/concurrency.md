@@ -47,9 +47,7 @@ if err := g.Wait(); err != nil {
 - Definir claramente quem é produtor e quem é consumidor — owner do channel é quem fecha.
 
 ### Graceful Shutdown de Goroutines
-- Toda goroutine de longa duração deve respeitar cancelamento via `context.Context` ou channel de done.
-- Usar `select` com `ctx.Done()` em loops de goroutines persistentes.
-- Drenar goroutines com `sync.WaitGroup` ou errgroup antes de encerrar o processo.
+- Ver `references/graceful-lifecycle.md` para padrões completos de shutdown coordenado.
 
 ## Riscos Comuns
 - Goroutine sem encerramento claro (goroutine leak).

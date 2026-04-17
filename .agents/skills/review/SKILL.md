@@ -25,7 +25,8 @@ description: Revisa um diff de código quanto a correção, segurança, regress�
 **Etapa 3: Produzir achados primeiro**
 1. Começar pelos achados concretos ordenados por severidade.
 2. Incluir referências de arquivo e uma explicação curta do impacto.
-3. Se não houver achados, dizer isso explicitamente e registrar riscos residuais ou lacunas de teste.
+3. Quando identificar bugs acionáveis, emitir a lista no formato canônico `{ id, severity, file, line, reproduction, expected, actual }` para consumo pela skill `bugfix`.
+4. Se não houver achados, dizer isso explicitamente e registrar riscos residuais ou lacunas de teste.
 
 **Etapa 4: Retornar um veredito canônico**
 1. Usar apenas um destes vereditos:
@@ -35,6 +36,7 @@ description: Revisa um diff de código quanto a correção, segurança, regress�
    - `BLOCKED`
 2. Usar `BLOCKED` quando faltar contexto necessário ou evidência de validação.
 3. Usar `REJECTED` quando o código tiver defeitos materiais ou regressões.
+4. Se o chamador estiver em fluxo de remediação e houver bugs no formato canônico, instruir explicitamente o uso da skill `bugfix` antes de uma nova rodada de revisão.
 
 ## Tratamento de Erros
 

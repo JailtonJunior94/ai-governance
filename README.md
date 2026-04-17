@@ -14,6 +14,7 @@ O instalador agora gera `AGENTS.md` e os adaptadores de forma contextual a parti
   execute-task/                          <- implementacao com evidencias
   refactor/                              <- refatoracao segura
   review/                                <- revisao de codigo
+  bugfix/                                <- correcao de bugs com remediacao e teste de regressao
   agent-governance/                      <- regras transversais (DDD, seguranca, erros, testes)
   go-implementation/                     <- regras e referencias para Go
   object-calisthenics-go/                <- heuristicas de object calisthenics adaptadas para Go
