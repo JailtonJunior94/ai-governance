@@ -13,6 +13,8 @@ set -euo pipefail
 
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# shellcheck source=scripts/lib/install-common.sh
+source "$SOURCE_DIR/scripts/lib/install-common.sh"
 # shellcheck source=scripts/lib/codex-config.sh
 source "$SOURCE_DIR/scripts/lib/codex-config.sh"
 
@@ -227,53 +229,20 @@ fi
 if [[ "$CHECK_ONLY" -eq 0 && "$OUTDATED" -gt 0 ]]; then
   ADAPTERS_UPDATED=0
 
-  # Claude agents
-  if [[ -d "$PROJECT_DIR/.claude/agents" && -d "$SOURCE_DIR/.claude/agents" ]]; then
-    for agent_file in "$SOURCE_DIR/.claude/agents/"*.md; do
-      [[ -f "$agent_file" ]] || continue
-      local_name="$(basename "$agent_file")"
-      target_file="$PROJECT_DIR/.claude/agents/$local_name"
-      if [[ ! -f "$target_file" ]] || ! diff -q "$agent_file" "$target_file" > /dev/null 2>&1; then
-        cp "$agent_file" "$target_file"
-        ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1))
-      fi
-    done
+  # Re-gerar adaptadores via script unificado (Claude, GitHub, Gemini)
+  ADAPTERS_GENERATOR="$SOURCE_DIR/scripts/generate-adapters.sh"
+  if [[ -f "$ADAPTERS_GENERATOR" ]]; then
+    bash "$ADAPTERS_GENERATOR" "$PROJECT_DIR" 2>/dev/null && \
+      ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1)) || true
   fi
 
   # Claude rules
-  if [[ -d "$PROJECT_DIR/.claude/rules" && -d "$SOURCE_DIR/.claude/rules" ]]; then
-    for rule_file in "$SOURCE_DIR/.claude/rules/"*.md; do
-      [[ -f "$rule_file" ]] || continue
-      local_name="$(basename "$rule_file")"
-      target_file="$PROJECT_DIR/.claude/rules/$local_name"
-      if [[ ! -f "$target_file" ]] || ! diff -q "$rule_file" "$target_file" > /dev/null 2>&1; then
-        cp "$rule_file" "$target_file"
-        ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1))
-      fi
-    done
-  fi
+  _rules_updated="$(sync_adapter_dir "$SOURCE_DIR/.claude/rules" "$PROJECT_DIR/.claude/rules" "*.md")"
+  ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + _rules_updated))
 
   # Claude scripts
-  if [[ -d "$PROJECT_DIR/.claude/scripts" && -d "$SOURCE_DIR/.claude/scripts" ]]; then
-    for script_file in "$SOURCE_DIR/.claude/scripts/"*; do
-      [[ -f "$script_file" ]] || continue
-      local_name="$(basename "$script_file")"
-      target_file="$PROJECT_DIR/.claude/scripts/$local_name"
-      if [[ ! -f "$target_file" ]] || ! diff -q "$script_file" "$target_file" > /dev/null 2>&1; then
-        cp "$script_file" "$target_file"
-        ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1))
-      fi
-    done
-  fi
-
-  # Gemini commands — re-gerar a partir das skills instaladas
-  if [[ -d "$PROJECT_DIR/.gemini/commands" ]]; then
-    GEMINI_GENERATOR="$SOURCE_DIR/scripts/generate-gemini-commands.sh"
-    if [[ -f "$GEMINI_GENERATOR" ]]; then
-      bash "$GEMINI_GENERATOR" "$PROJECT_DIR" 2>/dev/null && \
-        ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1)) || true
-    fi
-  fi
+  _scripts_updated="$(sync_adapter_dir "$SOURCE_DIR/.claude/scripts" "$PROJECT_DIR/.claude/scripts" "*")"
+  ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + _scripts_updated))
 
   # Codex config — re-gerar a partir das skills instaladas
   if [[ -f "$PROJECT_DIR/.codex/config.toml" ]]; then
@@ -286,19 +255,6 @@ if [[ "$CHECK_ONLY" -eq 0 && "$OUTDATED" -gt 0 ]]; then
       printf '%b' "$new_codex" > "$PROJECT_DIR/.codex/config.toml"
       ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1))
     fi
-  fi
-
-  # GitHub agents
-  if [[ -d "$PROJECT_DIR/.github/agents" && -d "$SOURCE_DIR/.github/agents" ]]; then
-    for agent_file in "$SOURCE_DIR/.github/agents/"*.agent.md; do
-      [[ -f "$agent_file" ]] || continue
-      local_name="$(basename "$agent_file")"
-      target_file="$PROJECT_DIR/.github/agents/$local_name"
-      if [[ ! -f "$target_file" ]] || ! diff -q "$agent_file" "$target_file" > /dev/null 2>&1; then
-        cp "$agent_file" "$target_file"
-        ADAPTERS_UPDATED=$((ADAPTERS_UPDATED + 1))
-      fi
-    done
   fi
 
   if [[ "$ADAPTERS_UPDATED" -gt 0 ]]; then

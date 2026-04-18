@@ -5,26 +5,20 @@ Unificar padrões de inicialização ordenada e encerramento gracioso para servi
 
 ## Diretrizes
 
-### Inicialização
-- Inicializar dependências em ordem explícita: config → logger → telemetry → database → cache → messaging → server.
-- Falhar fast se uma dependência obrigatória não estiver disponível na inicialização — não iniciar parcialmente.
-- Logar versão, build info e configuração não-sensível no startup para diagnóstico.
-- Usar readiness probe para sinalizar que o serviço está pronto para receber tráfego — não expor o endpoint antes da inicialização completa.
+### Inicializacao
+- Ordem explicita: config -> logger -> telemetry -> database -> cache -> messaging -> server.
+- Fail fast se dependencia obrigatoria indisponivel. Readiness probe antes de servir trafego.
 
 ### Sinais e Cancelamento
-- Capturar `SIGTERM` e `SIGINT` com `signal.NotifyContext` para obter um `context.Context` cancelável.
-- Propagar o context de shutdown para todas as goroutines e operações de longa duração.
-- Não usar `os.Exit` diretamente em goroutines — deixar o shutdown coordenado fluir até `main`.
+- `signal.NotifyContext` para SIGTERM/SIGINT. Propagar context para goroutines.
 
 ```go
 ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 defer stop()
 ```
 
-### Shutdown de Servidor HTTP/gRPC
-- Chamar `server.Shutdown(ctx)` com timeout explícito para drenar conexões ativas.
-- Timeout de shutdown deve ser menor que o `terminationGracePeriodSeconds` do orquestrador (Kubernetes: default 30s).
-- Parar de aceitar novas conexões imediatamente; aguardar requests em andamento até o timeout.
+### Shutdown de Servidor
+- `server.Shutdown(ctx)` com timeout < `terminationGracePeriodSeconds`.
 
 ```go
 shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -34,31 +28,17 @@ if err := server.Shutdown(shutdownCtx); err != nil {
 }
 ```
 
-### Shutdown de Workers e Consumers
-- Toda goroutine de longa duração deve respeitar cancelamento via `context.Context` ou channel de done.
-- Usar `select` com `ctx.Done()` em loops de goroutines persistentes.
-- Parar de consumir novas mensagens ao receber sinal; processar mensagens em andamento até o timeout.
-- Commitar offset/ack apenas de mensagens processadas com sucesso antes do shutdown.
+### Workers/Consumers
+- Goroutines devem respeitar `ctx.Done()`. Parar de consumir ao receber sinal; processar in-flight ate timeout.
 
-### Shutdown de Dependências
-- Fechar dependências na ordem inversa de inicialização: server → messaging → cache → database → telemetry → logger.
-- Usar `defer` encadeado ou lista explícita de closers para garantir ordem.
-- Flush de telemetry (traces, metrics) antes de fechar o exporter — dados não-flushed são perdidos.
+### Shutdown de Dependencias
+- Fechar na ordem inversa. Flush telemetry antes de fechar exporter.
 
 ```go
-// Padrão com lista de closers
-type closer struct {
-    name string
-    fn   func(context.Context) error
+closers := []struct{ name string; fn func(context.Context) error }{
+    {"server", server.Shutdown}, {"consumer", consumer.Close},
+    {"database", db.Close}, {"telemetry", tp.Shutdown},
 }
-
-closers := []closer{
-    {"server", server.Shutdown},
-    {"consumer", consumer.Close},
-    {"database", db.Close},
-    {"telemetry", tp.Shutdown},
-}
-
 for _, c := range closers {
     if err := c.fn(shutdownCtx); err != nil {
         slog.Error("shutdown failed", "component", c.name, "error", err)
@@ -66,22 +46,11 @@ for _, c := range closers {
 }
 ```
 
-### CLIs e Processos Curtos
-- CLIs que executam operações de IO (HTTP calls, queries) devem respeitar cancelamento via context.
-- Propagar context do sinal para operações internas — não ignorar Ctrl+C.
-- Fechar recursos (conexões, arquivos) com `defer` mesmo em processos curtos.
-
 ## Riscos Comuns
-- Shutdown abrupto cortando requests em andamento e causando erro 502 no load balancer.
-- Timeout de shutdown maior que `terminationGracePeriodSeconds` — orquestrador mata o processo antes do drain.
-- Goroutine leak por falta de cancelamento — processo encerra mas goroutines continuam executando até OOM.
-- Telemetry perdida por falta de flush antes do shutdown.
-- Consumer que commita offset de mensagem não-processada durante shutdown.
-- `os.Exit(1)` em handler de erro bypassing defers e closers.
+- Shutdown abrupto = 502. Timeout > terminationGracePeriodSeconds.
+- Goroutine leak sem cancelamento. Telemetry perdida sem flush.
+- Consumer commitando offset nao-processado. `os.Exit` bypassing defers.
 
 ## Proibido
-- Processo sem handler de sinal — shutdown deve ser sempre coordenado.
-- Goroutine de longa duração sem mecanismo de cancelamento.
-- `os.Exit` fora de `main` ou em goroutine secundária.
-- Ignorar erro de shutdown — logar mesmo que não seja recuperável.
-- Iniciar a servir tráfego antes de todas as dependências estarem prontas.
+- Processo sem signal handler. Goroutine sem cancelamento. `os.Exit` fora de main.
+- Ignorar erro de shutdown. Servir trafego antes de ready.

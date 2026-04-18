@@ -1,26 +1,11 @@
-# Arquitetura
+# Arquitetura Node/TypeScript
 
-## Objetivo
-Preservar composicao simples, dependencias explicitas e fronteiras nitidas.
+Principios gerais de arquitetura, DI e sinais de excesso estao em `shared-architecture.md` (agent-governance). Este arquivo cobre apenas especificidades Node/TypeScript.
 
-## Diretrizes
-- Preferir modulos coesos e dependencias direcionadas.
-- Manter regras de dominio fora de controllers, handlers e infraestrutura.
-- Concentrar orquestracao em camadas de aplicacao ou servicos explicitos.
-- Evitar cross-module helpers que misturem dominio, IO e formatacao.
-- Nomear modulos e classes pelo papel de negocio ou infraestrutura real.
-
-## Injecao de Dependencias
-- Preferir DI manual via construtores ou factory functions por padrao.
-- Usar container de DI (tsyringe, inversify, NestJS modules) apenas quando a arvore de dependencias justificar o custo de indireção.
-- Construtor deve receber dependencias como parametros explicitos, nao buscar de variavel global ou service locator.
+## DI em Node/TypeScript
+- Preferir construtores e factory functions. Usar `tsyringe`, `inversify` ou NestJS modules apenas quando justificado.
 
 ## Estrutura de Diretorios
-
-### Projeto existente
-- Seguir o layout ja adotado pelo projeto, mesmo que divirja dos exemplos abaixo.
-- Nao reorganizar modulos para "alinhar com o padrao" sem demanda concreta.
-- Novas adicoes devem respeitar a convencao local de nomes, profundidade e agrupamento.
 
 ### Projeto novo — layouts recomendados
 
@@ -42,14 +27,7 @@ src/
   workers/                    # consumers, job handlers
 ```
 
-### Regras comuns
-- `src/` contem codigo de aplicacao; `test/` ou `__tests__/` contem testes.
+### Regras Node/TypeScript
+- `src/` contem codigo; `test/` ou `__tests__/` contem testes.
 - Evitar `utils/` ou `helpers/` que misturem responsabilidades.
-- Nao criar pastas vazias preventivamente.
-- Profundidade maxima pratica: `src/<camada>/<modulo>/`. Evitar sub-sub-modulos sem necessidade.
-
-## Sinais de excesso
-- Modulo novo criado para uma unica funcao sem necessidade estrutural.
-- Interface sem consumidor alternativo.
-- Pattern introduzido apenas para "preparar o futuro".
-- Container de DI para projeto com menos de 10 dependencias raiz.
+- Profundidade maxima: `src/<camada>/<modulo>/`.

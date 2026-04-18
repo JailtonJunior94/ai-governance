@@ -55,6 +55,8 @@ LINK_MODE="${LINK_MODE:-symlink}"
 GENERATE_CONTEXTUAL_GOVERNANCE="${GENERATE_CONTEXTUAL_GOVERNANCE:-1}"
 GOVERNANCE_GENERATOR="$RULES_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
 
+# shellcheck source=scripts/lib/install-common.sh
+source "$RULES_DIR/scripts/lib/install-common.sh"
 # shellcheck source=scripts/lib/codex-config.sh
 source "$RULES_DIR/scripts/lib/codex-config.sh"
 
@@ -69,134 +71,16 @@ BASE_SKILLS=(create-prd create-technical-specification create-tasks execute-task
 # Skills de linguagem (selecionaveis pelo usuario)
 LANG_SKILLS=()
 
-
-dry_log() {
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "  [dry-run] $*"
-  fi
-}
-
-safe_mkdir() {
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    if [[ ! -d "$1" ]]; then
-      dry_log "mkdir -p $1"
-    fi
-    return
-  fi
-  mkdir -p "$1"
-}
-
-safe_cp() {
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    dry_log "cp $1 -> $2"
-    return
-  fi
-  cp "$@"
-}
-
-safe_cp_r() {
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    dry_log "cp -R $1 -> $2"
-    return
-  fi
-  cp -R "$@"
-}
-
-safe_ln() {
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    dry_log "ln -sfn $1 -> $2"
-    return
-  fi
-  ln -sfn "$1" "$2"
-}
-
-# Calcula caminho relativo de $2 (diretorio) para $1 (alvo).
-# Ambos devem ser caminhos absolutos. Resultado e o link relativo
-# que, criado dentro de $2, aponta para $1.
-compute_relpath() {
-  python3 -c "import os.path, sys; print(os.path.relpath(os.path.realpath(sys.argv[1]), os.path.realpath(sys.argv[2])))" "$1" "$2"
-}
-
-link_or_copy_dir() {
-  local source="$1"
-  local destination="$2"
-
-  safe_mkdir "$(dirname "$destination")"
-
-  if [[ "$LINK_MODE" == "copy" ]]; then
-    if [[ "$DRY_RUN" -eq 0 ]]; then
-      rm -rf "$destination"
-    fi
-    safe_cp_r "$source" "$destination"
-    return
-  fi
-
-  safe_ln "$source" "$destination"
-}
-
-link_or_copy_skill() {
-  local source_abs="$1"
-  local link_target="$2"
-  local destination="$3"
-
-  safe_mkdir "$(dirname "$destination")"
-
-  if [[ "$LINK_MODE" == "copy" ]]; then
-    if [[ "$DRY_RUN" -eq 0 ]]; then
-      rm -rf "$destination"
-    fi
-    safe_cp_r "$source_abs" "$destination"
-    return
-  fi
-
-  safe_ln "$link_target" "$destination"
-}
-
 # Selecao de ferramentas
 INSTALL_CLAUDE=0
 INSTALL_GEMINI=0
 INSTALL_CODEX=0
 INSTALL_COPILOT=0
 
-parse_tools() {
-  local input="$1"
-  if [[ "$input" == "all" ]]; then
-    INSTALL_CLAUDE=1; INSTALL_GEMINI=1; INSTALL_CODEX=1; INSTALL_COPILOT=1
-    return
-  fi
-  IFS=',' read -ra items <<< "$input"
-  for item in "${items[@]}"; do
-    case "$item" in
-      claude)  INSTALL_CLAUDE=1 ;;
-      gemini)  INSTALL_GEMINI=1 ;;
-      codex)   INSTALL_CODEX=1 ;;
-      copilot) INSTALL_COPILOT=1 ;;
-      *) echo "AVISO: ferramenta '$item' ignorada (invalida)." ;;
-    esac
-  done
-}
-
 # Selecao de linguagens
 INSTALL_GO=0
 INSTALL_NODE=0
 INSTALL_PYTHON=0
-
-parse_langs() {
-  local input="$1"
-  if [[ "$input" == "all" ]]; then
-    INSTALL_GO=1; INSTALL_NODE=1; INSTALL_PYTHON=1
-    return
-  fi
-  IFS=',' read -ra items <<< "$input"
-  for item in "${items[@]}"; do
-    case "$item" in
-      go)     INSTALL_GO=1 ;;
-      node)   INSTALL_NODE=1 ;;
-      python) INSTALL_PYTHON=1 ;;
-      *) echo "AVISO: linguagem '$item' ignorada (invalida)." ;;
-    esac
-  done
-}
 
 if [[ -n "$TOOLS_ARG" ]]; then
   # Modo nao-interativo
@@ -308,8 +192,13 @@ if [[ $INSTALL_CLAUDE -eq 1 ]]; then
     link_or_copy_skill "$RULES_DIR/.agents/skills/$skill" "../../.agents/skills/$skill" "$PROJECT_DIR/.claude/skills/$skill"
   done
   safe_cp "$RULES_DIR/.claude/rules/governance.md" "$PROJECT_DIR/.claude/rules/governance.md"
-  safe_cp "$RULES_DIR/.claude/agents/"*.md "$PROJECT_DIR/.claude/agents/"
   safe_cp "$RULES_DIR/.claude/scripts/validate-task-evidence.sh" "$PROJECT_DIR/.claude/scripts/"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    dry_log "gerar .claude/agents/*.md via generate-adapters.sh"
+  else
+    bash "$RULES_DIR/scripts/generate-adapters.sh" "$PROJECT_DIR" 2>/dev/null || \
+      safe_cp "$RULES_DIR/.claude/agents/"*.md "$PROJECT_DIR/.claude/agents/"
+  fi
 fi
 
 # Gemini CLI

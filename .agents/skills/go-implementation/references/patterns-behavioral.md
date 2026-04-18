@@ -1,22 +1,16 @@
 # Design Patterns — Behavioral
 
 ## Principios Gerais
-- Preferir composicao a hierarquias profundas.
-- Preferir funcao, metodo ou tipo concreto antes de factory, strategy ou decorator.
-- Usar pattern quando houver variacao recorrente de comportamento ou dependencia externa que exija adaptacao clara.
-- Escolher no maximo um pattern principal por problema.
-- Go nao tem heranca — patterns que dependem dela devem ser adaptados com interfaces e composicao.
+- Composicao sobre hierarquias. Funcao/tipo concreto antes de pattern.
+- Pattern apenas com variacao recorrente. No maximo um por problema.
 
 ---
 
 ### Strategy
-**Quando usar:** Algoritmo varia em runtime e o chamador precisa trocar a implementacao sem alterar o fluxo.
-**Em Go:** Interface pequena + implementacoes concretas injetadas via construtor.
+Interface pequena + implementacoes concretas injetadas via construtor quando algoritmo varia em runtime.
 
 ```go
-type pricer interface {
-    Calculate(order *Order) Money
-}
+type pricer interface { Calculate(order *Order) Money }
 
 type standardPricer struct{}
 func (p *standardPricer) Calculate(order *Order) Money { return order.subtotal }
@@ -27,16 +21,14 @@ func (p *discountPricer) Calculate(order *Order) Money {
 }
 ```
 
-### Chain of Responsibility (Middleware Chain)
-**Quando usar:** Request precisa passar por serie de handlers onde cada um decide processar ou delegar.
-**Em Go:** Padrao de middleware HTTP e o exemplo canonico.
+### Chain of Responsibility (Middleware)
+Serie de handlers onde cada um processa ou delega. Padrao canonico em middleware HTTP.
 
 ```go
 func recoveryMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         defer func() {
             if err := recover(); err != nil {
-                slog.Error("panic recovered", slog.Any("error", err))
                 http.Error(w, "internal error", http.StatusInternalServerError)
             }
         }()
@@ -46,62 +38,41 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 ```
 
 ### Observer (Event/Callback)
-**Quando usar:** Componente precisa reagir a evento sem acoplamento direto com o emissor.
-**Em Go:** Channel, callback function ou event dispatcher simples. Evitar frameworks de pub/sub in-process para casos simples.
+Channel, callback ou dispatcher simples para reagir a eventos sem acoplamento direto.
 
 ```go
 type EventHandler func(ctx context.Context, event any) error
 
-type Dispatcher struct {
-    handlers map[string][]EventHandler
-}
+type Dispatcher struct{ handlers map[string][]EventHandler }
 
-func (d *Dispatcher) On(eventType string, h EventHandler) {
-    d.handlers[eventType] = append(d.handlers[eventType], h)
-}
+func (d *Dispatcher) On(t string, h EventHandler) { d.handlers[t] = append(d.handlers[t], h) }
 
-func (d *Dispatcher) Dispatch(ctx context.Context, eventType string, event any) error {
-    for _, h := range d.handlers[eventType] {
-        if err := h(ctx, event); err != nil {
-            return err
-        }
+func (d *Dispatcher) Dispatch(ctx context.Context, t string, e any) error {
+    for _, h := range d.handlers[t] {
+        if err := h(ctx, e); err != nil { return err }
     }
     return nil
 }
 ```
 
 ### State
-**Quando usar:** Objeto muda de comportamento conforme seu estado e as transicoes precisam ser explicitas.
-**Em Go:** Enum + metodo que valida transicao. Para maquinas de estado complexas, interface por estado.
+Enum + metodo que valida transicao. Interface por estado apenas para maquinas complexas.
 
 ```go
-type Status string
-
-const (
-    StatusPending   Status = "pending"
-    StatusConfirmed Status = "confirmed"
-    StatusShipped   Status = "shipped"
-)
-
 var validTransitions = map[Status][]Status{
-    StatusPending:   {StatusConfirmed},
-    StatusConfirmed: {StatusShipped},
+    StatusPending: {StatusConfirmed}, StatusConfirmed: {StatusShipped},
 }
 
 func (o *Order) TransitionTo(next Status) error {
-    for _, valid := range validTransitions[o.status] {
-        if valid == next {
-            o.status = next
-            return nil
-        }
+    for _, v := range validTransitions[o.status] {
+        if v == next { o.status = next; return nil }
     }
     return fmt.Errorf("%w: %s -> %s", ErrInvalidTransition, o.status, next)
 }
 ```
 
 ### Template Method
-**Quando usar:** Algoritmo tem estrutura fixa mas passos variaveis.
-**Em Go:** Sem heranca, usar interface com steps + funcao orquestradora.
+Interface com steps + funcao orquestradora (sem heranca).
 
 ```go
 type DataImporter interface {
@@ -113,33 +84,27 @@ type DataImporter interface {
 
 func RunImport(ctx context.Context, imp DataImporter) error {
     data, err := imp.Fetch(ctx)
-    if err != nil {
-        return fmt.Errorf("fetching: %w", err)
-    }
+    if err != nil { return fmt.Errorf("fetching: %w", err) }
     records, err := imp.Parse(data)
-    if err != nil {
-        return fmt.Errorf("parsing: %w", err)
-    }
-    if err := imp.Validate(records); err != nil {
-        return fmt.Errorf("validating: %w", err)
-    }
+    if err != nil { return fmt.Errorf("parsing: %w", err) }
+    if err := imp.Validate(records); err != nil { return fmt.Errorf("validating: %w", err) }
     return imp.Save(ctx, records)
 }
 ```
 
 ---
 
-## Patterns Raramente Uteis em Go (Behavioral)
+## Patterns Raramente Uteis
 
-| Pattern | Por que evitar | Alternativa Go |
-|---------|---------------|----------------|
-| Mediator | Tendencia a virar god object | Injetar dependencias explicitas |
-| Memento | Raro em backends | Persistir estado em banco |
-| Visitor | Complexidade alta para ganho marginal | Type switch quando os tipos forem fechados |
-| Command | Util em UIs, raro em backends Go | Funcao ou closure |
-| Iterator | Go tem `range` nativo | `range` + funcoes de transformacao |
+| Pattern | Alternativa Go |
+|---------|----------------|
+| Mediator | Injetar dependencias explicitas |
+| Memento | Persistir estado em banco |
+| Visitor | Type switch para tipos fechados |
+| Command | Funcao ou closure |
+| Iterator | `range` + funcoes de transformacao |
 
 ## Proibido
-- Pattern introduzido sem problema recorrente que o justifique.
+- Pattern sem problema recorrente que o justifique.
 - Mais de um pattern para o mesmo problema.
-- Pattern que exige `reflect` para funcionar quando tipagem estatica resolveria.
+- Pattern que exige `reflect` quando tipagem estatica resolveria.

@@ -18,6 +18,9 @@ description: Orquestra regras de governanca, DDD, tratamento de erros, seguranca
 2. Ler `references/error-handling.md` quando a tarefa criar, propagar, encapsular, comparar ou apresentar erros.
 3. Ler `references/security.md` quando a tarefa envolver filesystem, subprocessos, segredos, configuracao, runtime, input externo ou dependencias.
 4. Ler `references/testing.md` quando a tarefa alterar comportamento, validadores, runtime, adapters, persistencia ou gates de validacao.
+5. Ler `references/shared-lifecycle.md` quando a tarefa envolver inicializacao, shutdown, signal handling ou drain de conexoes — principios universais aplicaveis a qualquer linguagem.
+6. Ler `references/shared-testing.md` quando a tarefa envolver estrategia de testes cross-linguagem — principios de unit/integration test aplicaveis a qualquer stack.
+7. Ler `references/shared-architecture.md` quando a tarefa envolver decisoes arquiteturais cross-linguagem — DI, organizacao de modulos, sinais de excesso.
 
 **Etapa 3: Executar com controle**
 1. Preservar comportamento publico existente, salvo quando a mudanca explicitar a alteracao.

@@ -9,7 +9,8 @@ description: Cria tarefas incrementais de implementação a partir de um PRD e d
 ## Procedimentos
 
 **Etapa 1: Validar os documentos de origem**
-1. Confirmar que `tasks/prd-<feature-slug>/prd.md` e `tasks/prd-<feature-slug>/techspec.md` existem.
+1. Confirmar que o contrato de carga base definido em `AGENTS.md` foi cumprido.
+2. Confirmar que `tasks/prd-<feature-slug>/prd.md` e `tasks/prd-<feature-slug>/techspec.md` existem.
 2. Ler os dois arquivos por completo antes de propor itens de trabalho.
 3. Parar com `needs_input` se qualquer documento estiver ausente ou contraditório o suficiente para bloquear o planejamento.
 

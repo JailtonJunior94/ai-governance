@@ -1,16 +1,13 @@
 # Exemplos: Fluxo End-to-End
 
-## Sentinel errors do dominio
+## Sentinel errors e entidade de dominio
 ```go
 // domain/order/errors.go
 var (
     ErrOrderNotFound     = errors.New("order not found")
     ErrInvalidTransition = errors.New("invalid status transition")
 )
-```
 
-## Entidade de dominio
-```go
 // domain/order/order.go
 type Order struct {
     id     string
@@ -34,12 +31,12 @@ func (o *Order) Confirm() error {
 }
 ```
 
-## Interface de repository (definida no consumidor)
+## Service com interface no consumidor + handler fino
 ```go
 // application/order/service.go
 type orderRepository interface {
     Save(ctx context.Context, order *domain.Order) error
-    FindByID(ctx context.Context, id string) (*domain.Order, error) // retorna domain.ErrOrderNotFound quando nao encontrar
+    FindByID(ctx context.Context, id string) (*domain.Order, error)
 }
 
 type Service struct {
@@ -56,22 +53,16 @@ func (s *Service) Confirm(ctx context.Context, id string) error {
     if err != nil {
         return fmt.Errorf("finding order %s: %w", id, err)
     }
-
     if err := order.Confirm(); err != nil {
         return err
     }
-
     if err := s.repo.Save(ctx, order); err != nil {
         return fmt.Errorf("saving order %s: %w", id, err)
     }
-
     s.log.InfoContext(ctx, "order confirmed", slog.String("order_id", id))
     return nil
 }
-```
 
-## Handler fino
-```go
 // handler/order/confirm.go
 func (h *Handler) Confirm(w http.ResponseWriter, r *http.Request) {
     id := r.PathValue("id")
@@ -79,18 +70,17 @@ func (h *Handler) Confirm(w http.ResponseWriter, r *http.Request) {
         http.Error(w, `{"error":"order id is required"}`, http.StatusBadRequest)
         return
     }
-
     if err := h.service.Confirm(r.Context(), id); err != nil {
         h.handleError(w, err)
         return
     }
-
     w.WriteHeader(http.StatusNoContent)
 }
 ```
 
-## Configuracao do mockery (`.mockery.yml` na raiz do projeto)
+## Mockery config + teste com suite
 ```yaml
+# .mockery.yml
 with-expecter: true
 dir: "{{.InterfaceDir}}/mocks"
 outpkg: "mocks"
@@ -102,12 +92,6 @@ packages:
       orderRepository:
 ```
 
-Gerar mocks com `mockery` a partir da raiz do projeto:
-```bash
-mockery
-```
-
-## Teste com suite e mockery
 ```go
 // application/order/service_test.go
 type ServiceSuite struct {
@@ -116,10 +100,7 @@ type ServiceSuite struct {
     svc  *Service
 }
 
-func TestServiceSuite(t *testing.T) {
-    suite.Run(t, new(ServiceSuite))
-}
-
+func TestServiceSuite(t *testing.T)      { suite.Run(t, new(ServiceSuite)) }
 func (s *ServiceSuite) SetupTest() {
     s.repo = mocks.NewOrderRepositoryMock(s.T())
     s.svc = NewService(s.repo, slog.Default())
@@ -127,32 +108,23 @@ func (s *ServiceSuite) SetupTest() {
 
 func (s *ServiceSuite) TestConfirm_PendingOrder() {
     order, _ := domain.New("order-1", domain.NewMoney(100))
-
     s.repo.EXPECT().FindByID(mock.Anything, "order-1").Return(order, nil)
     s.repo.EXPECT().Save(mock.Anything, order).Return(nil)
-
-    err := s.svc.Confirm(context.Background(), "order-1")
-
-    s.NoError(err)
+    s.NoError(s.svc.Confirm(context.Background(), "order-1"))
 }
 
 func (s *ServiceSuite) TestConfirm_OrderNotFound() {
     s.repo.EXPECT().FindByID(mock.Anything, "missing").Return(nil, domain.ErrOrderNotFound)
-
     err := s.svc.Confirm(context.Background(), "missing")
-
     s.ErrorIs(err, domain.ErrOrderNotFound)
     s.repo.AssertNotCalled(s.T(), "Save")
 }
 
 func (s *ServiceSuite) TestConfirm_SaveError() {
     order, _ := domain.New("order-1", domain.NewMoney(100))
-
     s.repo.EXPECT().FindByID(mock.Anything, "order-1").Return(order, nil)
     s.repo.EXPECT().Save(mock.Anything, order).Return(errors.New("db error"))
-
     err := s.svc.Confirm(context.Background(), "order-1")
-
     s.Error(err)
     s.Contains(err.Error(), "saving order")
 }

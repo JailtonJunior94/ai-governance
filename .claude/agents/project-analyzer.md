@@ -1,6 +1,6 @@
 ---
 name: project-analyzer
-description: Analisa arquitetura, stack e ferramentas de IA de um projeto e gera arquivos de governanca personalizados (AGENTS.md, CLAUDE.md, GEMINI.md, etc.).
+description: Analisa a arquitetura de um projeto (monolito, monolito modular, monorepo, microservico), detecta stack e ferramentas de
 skills:
   - analyze-project
 ---

@@ -1,6 +1,6 @@
 ---
 name: Analisador de Projeto
-description: Analisa arquitetura, stack e ferramentas de IA de um projeto e gera arquivos de governanca personalizados.
+description: Analisa a arquitetura de um projeto (monolito, monolito modular, monorepo, microservico), detecta stack e ferramentas de
 ---
 
 Use a habilidade `analyze-project` como processo canonico.

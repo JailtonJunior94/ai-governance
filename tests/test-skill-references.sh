@@ -156,6 +156,45 @@ for skill in go-implementation node-implementation python-implementation; do
 done
 
 # ============================================================
+# Validar que todo SKILL.md carrega base obrigatoria
+# (AGENTS.md + agent-governance) nas primeiras linhas
+# ============================================================
+for skill_dir in "$ROOT_DIR/.agents/skills"/*/; do
+  [[ -d "$skill_dir" ]] || continue
+  skill_name="$(basename "$skill_dir")"
+  skill_file="$skill_dir/SKILL.md"
+  [[ -f "$skill_file" ]] || continue
+
+  # agent-governance nao precisa referenciar a si mesmo
+  if [[ "$skill_name" == "agent-governance" ]]; then
+    if grep -q 'AGENTS\.md' "$skill_file"; then
+      pass "$skill_name: referencia AGENTS.md"
+    else
+      fail "$skill_name: nao referencia AGENTS.md"
+    fi
+    continue
+  fi
+
+  # Todas as outras skills devem mencionar o contrato de carga base (AGENTS.md)
+  if grep -q 'AGENTS\.md' "$skill_file"; then
+    pass "$skill_name: referencia contrato AGENTS.md"
+  else
+    fail "$skill_name: NAO referencia contrato AGENTS.md"
+  fi
+
+  # Skills que alteram codigo devem referenciar agent-governance
+  case "$skill_name" in
+    go-implementation|node-implementation|python-implementation|execute-task|refactor|bugfix|object-calisthenics-go)
+      if grep -q 'agent-governance' "$skill_file"; then
+        pass "$skill_name: referencia agent-governance"
+      else
+        fail "$skill_name: NAO referencia agent-governance"
+      fi
+      ;;
+  esac
+done
+
+# ============================================================
 # Resumo
 # ============================================================
 echo ""

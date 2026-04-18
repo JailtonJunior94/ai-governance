@@ -9,6 +9,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - generate-governance
+          - scripts
+          - skill-references
+          - context-metrics
+          - adapter-parity
+          - install
+          - upgrade
     steps:
       - uses: actions/checkout@v4
 
@@ -17,23 +28,5 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run governance generation tests
-        run: bash tests/test-generate-governance.sh
-
-      - name: Run script tests
-        run: bash tests/test-scripts.sh
-
-      - name: Run skill references tests
-        run: bash tests/test-skill-references.sh
-
-      - name: Run context metrics tests
-        run: bash tests/test-context-metrics.sh
-
-      - name: Run adapter parity tests
-        run: bash tests/test-adapter-parity.sh
-
-      - name: Run install tests
-        run: bash tests/test-install.sh
-
-      - name: Run upgrade tests
-        run: bash tests/test-upgrade.sh
+      - name: Run ${{ matrix.suite }} tests
+        run: bash tests/test-${{ matrix.suite }}.sh
