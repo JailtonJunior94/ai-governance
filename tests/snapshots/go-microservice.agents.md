@@ -17,16 +17,16 @@ Frameworks detectados: Echo,gRPC.
 
 ```
 .
+Dockerfile
 cmd
 cmd/server
 cmd/server/main.go
 go.mod
-Dockerfile
-k8s
-k8s/deployment.yaml
 internal
 internal/order
 internal/order/service.go
+k8s
+k8s/deployment.yaml
 ```
 
 ## Padrao Arquitetural

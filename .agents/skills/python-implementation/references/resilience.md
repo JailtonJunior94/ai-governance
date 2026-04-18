@@ -1,3 +1,5 @@
+> **Carregar quando:** retries, circuit breakers, timeouts em chamadas externas, fallbacks Python — **Escopo:** dependências externas, degradação graceful — **~750tk**
+
 # Resiliencia Python
 
 ## Objetivo

@@ -1,3 +1,5 @@
+> **Carregar quando:** Dockerfile, pipeline de CI, bundling, package manager, empacotamento Node — **Escopo:** build, packaging, CI — **~600tk**
+
 # Build e Packaging Node/TypeScript
 
 ## Objetivo

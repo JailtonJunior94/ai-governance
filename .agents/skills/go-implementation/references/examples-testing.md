@@ -1,3 +1,5 @@
+> **Carregar quando:** exemplos de fuzz test, table-driven test, construtor com invariantes, interface no consumidor — **Escopo:** testes concretos, exemplos de código — **~400tk**
+
 # Exemplos: Testes e Validacao
 
 ## Construtor com invariantes

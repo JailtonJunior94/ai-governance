@@ -143,3 +143,26 @@ if [[ "$CHECK_ONLY" -eq 1 && $((OUTDATED + MISSING)) -gt 0 ]]; then
   echo "Execute sem --check para atualizar: bash upgrade.sh $PROJECT_DIR"
   exit 1
 fi
+
+# --verify: re-gerar governanca contextual se AGENTS.md existir e houve atualizacoes
+GOVERNANCE_GENERATOR="$SOURCE_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
+
+if [[ "$CHECK_ONLY" -eq 0 && "$OUTDATED" -gt 0 && -f "$PROJECT_DIR/AGENTS.md" && -f "$GOVERNANCE_GENERATOR" ]]; then
+  echo ""
+  echo "-> Re-gerando governanca contextual apos atualizacao de skills..."
+
+  # Detectar quais ferramentas estao instaladas no projeto alvo
+  INSTALL_CLAUDE=0; INSTALL_GEMINI=0; INSTALL_CODEX=0; INSTALL_COPILOT=0
+  [[ -f "$PROJECT_DIR/CLAUDE.md" ]] && INSTALL_CLAUDE=1
+  [[ -f "$PROJECT_DIR/GEMINI.md" ]] && INSTALL_GEMINI=1
+  [[ -f "$PROJECT_DIR/.codex/config.toml" ]] && INSTALL_CODEX=1
+  [[ -f "$PROJECT_DIR/.github/copilot-instructions.md" ]] && INSTALL_COPILOT=1
+
+  INSTALL_CLAUDE="$INSTALL_CLAUDE" \
+  INSTALL_GEMINI="$INSTALL_GEMINI" \
+  INSTALL_CODEX="$INSTALL_CODEX" \
+  INSTALL_COPILOT="$INSTALL_COPILOT" \
+  bash "$GOVERNANCE_GENERATOR" "$PROJECT_DIR" 2>/dev/null && \
+    echo "   Governanca contextual re-gerada com sucesso." || \
+    echo "   AVISO: falha ao re-gerar governanca contextual."
+fi

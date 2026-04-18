@@ -17,13 +17,13 @@ Frameworks detectados: nenhum framework dominante identificado.
 
 ```
 .
+apps
+apps/web
+apps/web/package.json
 package.json
 packages
 packages/shared
 packages/shared/package.json
-apps
-apps/web
-apps/web/package.json
 pnpm-workspace.yaml
 ```
 

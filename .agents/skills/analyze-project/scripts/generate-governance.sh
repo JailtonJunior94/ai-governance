@@ -243,7 +243,8 @@ build_directory_tree() {
   local tree
   tree="$(cd "$PROJECT_DIR" && find . \
     \( -path './.git' -o -path './.agents' -o -path './.claude' -o -path './.codex' -o -path './.gemini' -o -path './node_modules' -o -path './vendor' -o -path './dist' -o -path './build' -o -path './bin' -o -path './target' -o -path './__pycache__' \) -prune \
-    -o -print | sed 's#^\./##' | awk 'NR <= 80 { print }')"
+    -o \( -name '.gitkeep' -prune \) \
+    -o -print | sed 's#^\./##' | sort | awk 'NR <= 80 { print }')"
 
   if [[ -z "$tree" ]]; then
     printf '.\n'

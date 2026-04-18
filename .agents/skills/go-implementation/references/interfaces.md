@@ -1,3 +1,5 @@
+> **Carregar quando:** criação, remoção ou remodelagem de interfaces, fronteiras de dependência, repository, client — **Escopo:** contratos, composição de interfaces — **~600tk**
+
 # Interfaces
 
 ## Quando usar

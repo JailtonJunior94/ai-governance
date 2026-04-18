@@ -18,7 +18,9 @@ description: Executa uma tarefa de implementação aprovada por meio de codifica
 1. Ler por completo o arquivo de tarefa selecionado, `prd.md` e `techspec.md`.
 2. Confirmar que o contrato de carga base definido em `AGENTS.md` foi cumprido.
 3. Se a tarefa tocar código Go, ler também `.agents/skills/go-implementation/SKILL.md` e carregar apenas as referências exigidas pela mudança.
-4. Mapear objetivo da tarefa, critérios de aceitação, subtarefas e arquivos-alvo antes de editar.
+4. Se a tarefa tocar código Node/TypeScript, ler também `.agents/skills/node-implementation/SKILL.md` e carregar apenas as referências exigidas pela mudança.
+5. Se a tarefa tocar código Python, ler também `.agents/skills/python-implementation/SKILL.md` e carregar apenas as referências exigidas pela mudança.
+6. Mapear objetivo da tarefa, critérios de aceitação, subtarefas e arquivos-alvo antes de editar.
 
 **Etapa 3: Executar a etapa de implementação**
 1. Seguir a ordem das subtarefas definida no arquivo de tarefa.

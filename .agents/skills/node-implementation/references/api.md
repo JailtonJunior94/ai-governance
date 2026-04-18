@@ -1,3 +1,5 @@
+> **Carregar quando:** handlers HTTP/GraphQL, middlewares, DTOs, validação de request, serialização — **Escopo:** transporte, request/response, contratos Node — **~500tk**
+
 # API (HTTP/GraphQL)
 
 ## Objetivo

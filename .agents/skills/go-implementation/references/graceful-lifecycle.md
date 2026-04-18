@@ -1,3 +1,5 @@
+> **Carregar quando:** inicialização ordenada, shutdown gracioso, signal handling, drain de conexões, goroutines de longa duração — **Escopo:** lifecycle, signals, encerramento — **~1050tk**
+
 # Graceful Lifecycle
 
 ## Objetivo

@@ -34,7 +34,7 @@ description: Cria especificações técnicas prontas para implementação a part
    - `.agents/skills/agent-governance/references/ddd.md`
    - `.agents/skills/agent-governance/references/error-handling.md`
    - `.agents/skills/agent-governance/references/security.md`
-   - `.agents/skills/agent-governance/references/tests.md`
+   - `.agents/skills/agent-governance/references/testing.md`
 2. Para cada desvio intencional, registrar a justificativa e a alternativa aderente rejeitada.
 
 **Etapa 5: Redigir a especificação técnica**

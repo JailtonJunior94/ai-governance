@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Detecta comandos de fmt, test e lint disponiveis no projeto.
 # Suporta multiplas linguagens simultaneamente (monorepos).
+# Em monorepos, busca go.mod e package.json ate 2 niveis de profundidade.
 # Uso: bash detect-toolchain.sh [diretorio]
 # Saida: JSON com chave por linguagem detectada, cada uma com fmt, test, lint.
 # Exemplo: {"go":{"fmt":"gofmt -w .","test":"go test ./...","lint":"golangci-lint run"},"node":{"fmt":"pnpm run fmt","test":"pnpm run test","lint":"pnpm run lint"}}
@@ -15,6 +16,24 @@ if [[ ! -d "$PROJECT_DIR" ]]; then
 fi
 
 cd "$PROJECT_DIR"
+
+# Detecta se o projeto e monorepo (sinais fortes)
+is_monorepo() {
+  [[ -f "go.work" ]] || [[ -f "pnpm-workspace.yaml" ]] || [[ -f "nx.json" ]] || [[ -f "turbo.json" ]] || [[ -f "lerna.json" ]]
+}
+
+# Busca um arquivo ate 2 niveis de profundidade (para monorepos)
+find_deep() {
+  local filename="$1"
+  if [[ -f "$filename" ]]; then
+    return 0
+  fi
+  if is_monorepo; then
+    find . -maxdepth 2 -name "$filename" -not -path "*/node_modules/*" -not -path "*/vendor/*" -print -quit 2>/dev/null | read -r _
+  else
+    return 1
+  fi
+}
 
 json_val() {
   if [[ -n "$1" ]]; then
@@ -32,7 +51,7 @@ json_entry() {
 entries=()
 
 # --- Go ---
-if [[ -f "go.mod" ]]; then
+if [[ -f "go.mod" ]] || find_deep "go.mod"; then
   go_fmt="gofmt -w ."
   go_test="go test ./..."
   go_lint=""
@@ -45,7 +64,7 @@ if [[ -f "go.mod" ]]; then
 fi
 
 # --- Node/TypeScript ---
-if [[ -f "package.json" ]]; then
+if [[ -f "package.json" ]] || find_deep "package.json"; then
   pm="npm"
   if [[ -f "pnpm-lock.yaml" ]]; then
     pm="pnpm"
@@ -87,7 +106,7 @@ if [[ -f "package.json" ]]; then
 fi
 
 # --- Python ---
-if [[ -f "pyproject.toml" ]] || [[ -f "requirements.txt" ]] || [[ -f "setup.py" ]] || [[ -f "Pipfile" ]]; then
+if [[ -f "pyproject.toml" ]] || [[ -f "requirements.txt" ]] || [[ -f "setup.py" ]] || [[ -f "Pipfile" ]] || find_deep "pyproject.toml" || find_deep "requirements.txt"; then
   py_fmt=""
   py_lint=""
   if command -v ruff >/dev/null 2>&1 || [[ -f "ruff.toml" ]] || [[ -f ".ruff.toml" ]]; then
@@ -149,14 +168,6 @@ if [[ ${#entries[@]} -eq 0 ]]; then
   fi
 
   entries+=("$(json_entry "unknown" "$fallback_fmt" "$fallback_test" "$fallback_lint")")
-fi
-
-# --- Makefile/Taskfile overrides para linguagens detectadas ---
-# Se uma linguagem foi detectada mas falta algum comando, tentar Makefile/Taskfile como complemento
-if [[ ${#entries[@]} -gt 0 ]] && { [[ -f "Makefile" ]] || [[ -f "Taskfile.yml" ]] || [[ -f "Taskfile.yaml" ]]; }; then
-  # Este bloco nao altera entries ja construidas — o override de Makefile/Taskfile
-  # so se aplica ao fallback acima. Para linguagens detectadas, os comandos nativos prevalecem.
-  :
 fi
 
 # Emitir JSON

@@ -1,3 +1,5 @@
+> **Carregar quando:** dependency injection, repository, dataclasses, strategy, organização de módulos Python — **Escopo:** padrões recorrentes, composição — **~450tk**
+
 # Padroes Python
 
 ## Objetivo

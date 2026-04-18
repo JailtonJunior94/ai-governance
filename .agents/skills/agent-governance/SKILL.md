@@ -17,7 +17,7 @@ description: Orquestra regras de governanca, DDD, tratamento de erros, seguranca
 1. Ler `references/ddd.md` quando a tarefa alterar entidades, value objects, aggregate roots, transicoes de estado ou regras de aplicacao.
 2. Ler `references/error-handling.md` quando a tarefa criar, propagar, encapsular, comparar ou apresentar erros.
 3. Ler `references/security.md` quando a tarefa envolver filesystem, subprocessos, segredos, configuracao, runtime, input externo ou dependencias.
-4. Ler `references/tests.md` quando a tarefa alterar comportamento, validadores, runtime, adapters, persistencia ou gates de validacao.
+4. Ler `references/testing.md` quando a tarefa alterar comportamento, validadores, runtime, adapters, persistencia ou gates de validacao.
 
 **Etapa 3: Executar com controle**
 1. Preservar comportamento publico existente, salvo quando a mudanca explicitar a alteracao.

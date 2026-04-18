@@ -1,3 +1,5 @@
+> **Carregar quando:** estratégia de testes, testcontainers, mocks, testify, fuzz — **Escopo:** unit, integration, determinismo — **~1300tk**
+
 # Testes
 
 ## Objetivo

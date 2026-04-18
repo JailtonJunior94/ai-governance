@@ -1,3 +1,5 @@
+> **Carregar quando:** validadores, adapters, persistência, IO, gates de validação — **Escopo:** cobertura mínima, determinismo, gates transversais — **~400tk**
+
 # Testes
 
 - Rule ID: R-TEST-001
@@ -20,7 +22,7 @@ Garantir confiabilidade do código, dos adapters e das integrações.
 - Casos com matriz de entrada devem usar table-driven tests.
 
 ### Ferramentas
-- Para diretrizes detalhadas de ferramentas de teste em Go (testify, mockery, fuzz), consultar `.agents/skills/go-implementation/references/tests.md`.
+- Para diretrizes detalhadas de ferramentas de teste em Go (testify, mockery, fuzz), consultar `.agents/skills/go-implementation/references/testing.md`.
 
 ### Determinismo
 - Testes não devem depender de rede real nem de ferramentas externas instaladas.

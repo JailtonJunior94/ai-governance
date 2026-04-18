@@ -41,6 +41,15 @@ for fixture_dir in "$FIXTURES_DIR"/*/; do
     continue
   fi
 
+  # Lint: verificar que nao restaram placeholders {{ }} no output
+  if grep -q '{{' "$output_file" 2>/dev/null; then
+    echo "FAIL  $fixture_name — placeholders {{ }} remanescentes no output:"
+    grep -n '{{' "$output_file"
+    FAILED=$((FAILED + 1))
+    rm -f "$output_file"
+    continue
+  fi
+
   if [[ "$UPDATE" -eq 1 ]]; then
     cp "$output_file" "$snapshot_file"
     echo "UPDATED  $fixture_name"

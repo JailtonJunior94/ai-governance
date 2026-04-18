@@ -1,3 +1,5 @@
+> **Carregar quando:** handlers HTTP/gRPC, middlewares, DTOs, serialização, paginação, versionamento de API — **Escopo:** transporte, request/response, contratos — **~850tk**
+
 # API (HTTP/gRPC)
 
 ## Objetivo

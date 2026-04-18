@@ -1,33 +1,27 @@
+> **Carregar quando:** criacao, propagacao, encapsulamento ou apresentacao de excecoes Python — **Escopo:** hierarquia de erros, dominio vs infra, rastreabilidade — **~500tk**
+> **Base transversal:** `.agents/skills/agent-governance/references/error-handling.md` (modelagem, wrapping, retry, comparacao). Este arquivo contem apenas o delta idiomatico Python.
+
 # Tratamento de Erros Python
 
-## Objetivo
-Padronizar excecoes com hierarquia clara, separando erros de dominio de erros de infraestrutura.
-
-## Diretrizes
-
-### Modelagem
+## Modelagem
 - Criar hierarquia de excecoes a partir de uma base do projeto (ex: `AppError(Exception)`).
 - Separar excecoes de dominio (ex: `OrderAlreadyShipped`) de excecoes de infraestrutura (ex: `DatabaseConnectionError`).
 - Usar `raise ... from err` para preservar cadeia de excecao (PEP 3134).
-- Mensagens internas devem ser curtas, em lowercase e estaveis.
 
-### Captura
+## Captura
 - Capturar excecoes especificas — nunca `except Exception` generico sem re-raise.
 - Usar context managers (`with`) para garantir cleanup de recursos (arquivos, conexoes, locks).
 - Capturar na fronteira mais externa relevante (handler, command, entrypoint).
-- Nao usar excecoes para controle de fluxo nao excepcional.
 
-### Apresentacao
+## Apresentacao
 - A camada de transporte (view/handler) traduz excecao interna em resposta HTTP adequada.
-- Nao expor traceback, mensagens internas ou detalhes de infraestrutura ao cliente.
 - Retornar estrutura consistente: `{"error": {"code": "...", "message": "..."}}`.
 
-### Validacao
-- Falhar cedo com mensagem clara indicando campo e restricao violada.
+## Validacao
 - Preferir pydantic, attrs ou marshmallow sobre validacao manual.
 - Validar na fronteira de entrada, nao dentro da logica de negocio.
 
-### Logging de Erros
+## Logging de Erros
 - Logar excecao com `logger.exception()` ou `logger.error(..., exc_info=True)` para preservar traceback.
 - Nao logar e re-raise na mesma camada — logar uma vez na fronteira mais externa.
 

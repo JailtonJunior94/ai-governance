@@ -1,3 +1,5 @@
+> **Carregar quando:** estrutura de projeto, organização de módulos, padrões de importação, estilo TypeScript — **Escopo:** convenções, naming, estrutura — **~350tk**
+
 # Convencoes Node/TypeScript
 
 ## Objetivo

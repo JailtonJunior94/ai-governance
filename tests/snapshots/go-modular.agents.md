@@ -17,13 +17,13 @@ Frameworks detectados: Gin.
 
 ```
 .
+.golangci.yml
 go.mod
 internal
-internal/order
-internal/notification
-internal/payment
 internal/customer
-.golangci.yml
+internal/notification
+internal/order
+internal/payment
 ```
 
 ## Padrao Arquitetural

@@ -1,3 +1,5 @@
+> **Carregar quando:** dependency injection, repository, factory, strategy, organização de módulos Node — **Escopo:** padrões recorrentes, composição — **~500tk**
+
 # Padroes Node/TypeScript
 
 ## Objetivo

@@ -1,3 +1,5 @@
+> **Carregar quando:** Dockerfile, pipeline de CI, packaging Python, gerenciamento de dependências, distribuição — **Escopo:** build, packaging, CI — **~700tk**
+
 # Build e Packaging Python
 
 ## Objetivo

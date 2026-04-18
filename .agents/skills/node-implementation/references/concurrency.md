@@ -1,3 +1,5 @@
+> **Carregar quando:** Promises, controle de concorrência, worker threads, streams, event loop — **Escopo:** assincronia, paralelismo, fluxo de controle — **~750tk**
+
 # Concorrencia Node/TypeScript
 
 ## Objetivo

@@ -1,3 +1,5 @@
+> **Carregar quando:** asyncio, threading, multiprocessing, controle de concorrência, paralelismo Python — **Escopo:** assincronia, paralelismo, event loop — **~700tk**
+
 # Concorrencia Python
 
 ## Objetivo

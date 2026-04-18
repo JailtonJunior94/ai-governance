@@ -60,6 +60,20 @@ for skill in agent-governance go-implementation node-implementation python-imple
   check_codex "$skill"
 done
 
+echo "=== Gemini {{args}} placeholder ==="
+for skill in create-prd create-technical-specification create-tasks execute-task refactor review analyze-project bugfix object-calisthenics-go go-implementation node-implementation python-implementation; do
+  toml_path="$ROOT_DIR/.gemini/commands/${skill}.toml"
+  if [[ ! -e "$toml_path" ]]; then
+    echo "FAIL  gemini-args/$skill -> file missing"
+    FAILED=$((FAILED + 1))
+  elif grep -q '{{args}}' "$toml_path" 2>/dev/null; then
+    PASSED=$((PASSED + 1))
+  else
+    echo "FAIL  gemini-args/$skill -> {{args}} placeholder missing in $toml_path"
+    FAILED=$((FAILED + 1))
+  fi
+done
+
 echo ""
 echo "Resultado: $PASSED passed, $FAILED failed"
 if [[ "$FAILED" -gt 0 ]]; then

@@ -15,7 +15,7 @@ description: Revisa um diff de código quanto a correção, segurança, regress�
    - `.agents/skills/agent-governance/references/ddd.md`
    - `.agents/skills/agent-governance/references/error-handling.md`
    - `.agents/skills/agent-governance/references/security.md`
-   - `.agents/skills/agent-governance/references/tests.md`
+   - `.agents/skills/agent-governance/references/testing.md`
 
 **Etapa 2: Revisar como dono do código**
 1. Priorizar correção, segurança, regressões de comportamento, testes faltantes e lacunas de evidência.
