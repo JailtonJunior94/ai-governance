@@ -1,5 +1,3 @@
-> **Carregar quando:** carregamento de configuração, variáveis de ambiente, inicialização de dependências, structs de config — **Escopo:** config, env, defaults — **~350tk**
-
 # Configuração
 
 ## Objetivo

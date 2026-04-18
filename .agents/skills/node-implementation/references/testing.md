@@ -1,5 +1,3 @@
-> **Carregar quando:** estratégia de testes, mocking, testcontainers, cobertura — **Escopo:** unit, integration, fixtures — **~850tk**
-
 # Testes Node/TypeScript
 
 ## Objetivo

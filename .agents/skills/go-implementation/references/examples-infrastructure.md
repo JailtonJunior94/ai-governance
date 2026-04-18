@@ -1,5 +1,3 @@
-> **Carregar quando:** exemplos de graceful shutdown, paginação cursor-based, versionamento de API em Go — **Escopo:** infraestrutura concreta, exemplos de código — **~850tk**
-
 # Exemplos: Infraestrutura
 
 ## Graceful Shutdown

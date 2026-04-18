@@ -1,5 +1,3 @@
-> **Carregar quando:** filesystem, subprocessos, segredos, configuração, input externo, dependências — **Escopo:** baseline de segurança transversal — **~400tk**
-
 # Segurança
 
 - Rule ID: R-SEC-001

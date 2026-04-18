@@ -6,6 +6,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROOT_DIR="$(cd "$SKILL_DIR/../../.." && pwd)"
 
+# shellcheck source=../../../../scripts/lib/codex-config.sh
+source "$ROOT_DIR/scripts/lib/codex-config.sh"
+
 PROJECT_DIR="${1:-.}"
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 
@@ -30,6 +33,24 @@ file_exists() {
   [[ -e "$PROJECT_DIR/$1" ]]
 }
 
+find_manifests() {
+  local pattern="$1"
+  local maxdepth="${2:-4}"
+
+  find "$PROJECT_DIR" -maxdepth "$maxdepth" -type f -name "$pattern" \
+    -not -path "*/node_modules/*" \
+    -not -path "*/vendor/*" \
+    -not -path "*/dist/*" \
+    -not -path "*/build/*" \
+    -not -path "*/__pycache__/*" \
+    | LC_ALL=C sort
+}
+
+has_manifest() {
+  local pattern="$1"
+  find_manifests "$pattern" 4 | read -r _
+}
+
 has_any_files() {
   local dir="$1"
   [[ -d "$PROJECT_DIR/$dir" ]] || return 1
@@ -41,7 +62,7 @@ has_any_files() {
 # Se for "1", inclui. Qualquer outro valor, exclui.
 should_include_go() {
   if [[ "$INSTALL_GO" == "auto" ]]; then
-    file_exists "go.mod"
+    file_exists "go.mod" || file_exists "go.work" || has_manifest "go.mod"
   else
     [[ "$INSTALL_GO" == "1" ]]
   fi
@@ -49,7 +70,7 @@ should_include_go() {
 
 should_include_node() {
   if [[ "$INSTALL_NODE" == "auto" ]]; then
-    file_exists "package.json" || file_exists "tsconfig.json"
+    file_exists "package.json" || file_exists "tsconfig.json" || has_manifest "package.json" || has_manifest "tsconfig.json"
   else
     [[ "$INSTALL_NODE" == "1" ]]
   fi
@@ -57,7 +78,7 @@ should_include_node() {
 
 should_include_python() {
   if [[ "$INSTALL_PYTHON" == "auto" ]]; then
-    file_exists "pyproject.toml" || file_exists "requirements.txt" || file_exists "setup.py" || file_exists "Pipfile"
+    file_exists "pyproject.toml" || file_exists "requirements.txt" || file_exists "setup.py" || file_exists "Pipfile" || has_manifest "pyproject.toml" || has_manifest "requirements.txt"
   else
     [[ "$INSTALL_PYTHON" == "1" ]]
   fi
@@ -134,27 +155,28 @@ detect_frameworks() {
   local frameworks=()
 
   # --- Go ---
-  if file_exists "go.mod"; then
-    if grep -q 'github.com/gin-gonic/gin' "$PROJECT_DIR/go.mod"; then
+  while IFS= read -r go_mod; do
+    [[ -n "$go_mod" ]] || continue
+    if grep -q 'github.com/gin-gonic/gin' "$go_mod"; then
       frameworks+=("Gin")
     fi
-    if grep -q 'github.com/labstack/echo' "$PROJECT_DIR/go.mod"; then
+    if grep -q 'github.com/labstack/echo' "$go_mod"; then
       frameworks+=("Echo")
     fi
-    if grep -q 'github.com/gofiber/fiber' "$PROJECT_DIR/go.mod"; then
+    if grep -q 'github.com/gofiber/fiber' "$go_mod"; then
       frameworks+=("Fiber")
     fi
-    if grep -q 'google.golang.org/grpc' "$PROJECT_DIR/go.mod"; then
+    if grep -q 'google.golang.org/grpc' "$go_mod"; then
       frameworks+=("gRPC")
     fi
-    if grep -q 'connectrpc.com/connect' "$PROJECT_DIR/go.mod"; then
+    if grep -q 'connectrpc.com/connect' "$go_mod"; then
       frameworks+=("Connect")
     fi
-  fi
+  done < <(find_manifests "go.mod" 4)
 
   # --- Node/TypeScript ---
-  if file_exists "package.json"; then
-    local pkg="$PROJECT_DIR/package.json"
+  while IFS= read -r pkg; do
+    [[ -n "$pkg" ]] || continue
     if grep -q '"express"' "$pkg"; then
       frameworks+=("Express")
     fi
@@ -170,11 +192,11 @@ detect_frameworks() {
     if grep -q '"hono"' "$pkg"; then
       frameworks+=("Hono")
     fi
-  fi
+  done < <(find_manifests "package.json" 4)
 
   # --- Python ---
-  if file_exists "pyproject.toml"; then
-    local pyp="$PROJECT_DIR/pyproject.toml"
+  while IFS= read -r pyp; do
+    [[ -n "$pyp" ]] || continue
     if grep -q 'fastapi' "$pyp"; then
       frameworks+=("FastAPI")
     fi
@@ -184,8 +206,10 @@ detect_frameworks() {
     if grep -q 'flask' "$pyp"; then
       frameworks+=("Flask")
     fi
-  elif file_exists "requirements.txt"; then
-    local req="$PROJECT_DIR/requirements.txt"
+  done < <(find_manifests "pyproject.toml" 4)
+
+  while IFS= read -r req; do
+    [[ -n "$req" ]] || continue
     if grep -qi 'fastapi' "$req"; then
       frameworks+=("FastAPI")
     fi
@@ -195,7 +219,7 @@ detect_frameworks() {
     if grep -qi 'flask' "$req"; then
       frameworks+=("Flask")
     fi
-  fi
+  done < <(find_manifests "requirements.txt" 4)
 
   if [[ ${#frameworks[@]} -eq 0 ]]; then
     printf 'nenhum framework dominante identificado'
@@ -203,20 +227,20 @@ detect_frameworks() {
   fi
 
   local joined
-  joined="$(IFS=', '; printf '%s' "${frameworks[*]}")"
+  joined="$(printf '%s\n' "${frameworks[@]}" | awk '!seen[$0]++' | python3 -c 'import sys; print(", ".join(line.strip() for line in sys.stdin if line.strip()))')"
   printf '%s' "$joined"
 }
 
 detect_primary_stack() {
   local parts=()
 
-  if file_exists "go.mod"; then
+  if should_include_go; then
     parts+=("Go")
   fi
-  if file_exists "package.json"; then
+  if should_include_node; then
     parts+=("Node.js")
   fi
-  if file_exists "pyproject.toml" || file_exists "requirements.txt"; then
+  if should_include_python; then
     parts+=("Python")
   fi
   if file_exists "pom.xml" || file_exists "build.gradle" || file_exists "build.gradle.kts"; then
@@ -296,7 +320,7 @@ EOF
 }
 
 build_dependency_flow() {
-  if file_exists "go.mod"; then
+  if should_include_go; then
     cat <<'EOF'
 - Transporte e adapters devem depender de casos de uso ou servicos explicitos, nao do contrario.
 - Dominio nao deve conhecer detalhes de HTTP, banco, filas, serializacao ou drivers.
@@ -305,7 +329,7 @@ EOF
     return
   fi
 
-  if file_exists "package.json" || file_exists "tsconfig.json"; then
+  if should_include_node; then
     cat <<'EOF'
 - Controllers e routers devem depender de services ou use cases, nao do contrario.
 - Dominio nao deve importar detalhes de framework (Express, Fastify, NestJS), ORM ou drivers.
@@ -314,7 +338,7 @@ EOF
     return
   fi
 
-  if file_exists "pyproject.toml" || file_exists "requirements.txt" || file_exists "setup.py" || file_exists "Pipfile"; then
+  if should_include_python; then
     cat <<'EOF'
 - Routers e handlers devem depender de services ou use cases, nao do contrario.
 - Dominio nao deve importar detalhes de framework (FastAPI, Django, Flask), ORM ou drivers.
@@ -399,11 +423,58 @@ build_language_references() {
 
 build_validation_commands() {
   local lines=()
+  local toolchain_script="$ROOT_DIR/.agents/skills/agent-governance/scripts/detect-toolchain.sh"
+  local toolchain_json=""
 
   lines+=("Seguir Etapa 4 de \`.agents/skills/agent-governance/SKILL.md\` como base canonica.")
   lines+=("")
 
-  if should_include_go && file_exists "go.mod"; then
+  if [[ -x "$toolchain_script" || -f "$toolchain_script" ]]; then
+    toolchain_json="$(bash "$toolchain_script" "$PROJECT_DIR" 2>/dev/null || true)"
+  fi
+
+  if [[ -n "$toolchain_json" ]]; then
+    local detected_lines=()
+    local detected_output=""
+
+    detected_output="$(TOOLCHAIN_JSON="$toolchain_json" python3 - <<'PY'
+import json
+import os
+
+payload = json.loads(os.environ["TOOLCHAIN_JSON"])
+labels = {"go": "Go", "node": "Node", "python": "Python"}
+order = ["go", "node", "python"]
+
+for key in order:
+    data = payload.get(key)
+    if not isinstance(data, dict):
+        continue
+    cmds = []
+    if data.get("fmt"):
+        cmds.append(f"fmt: `{data['fmt']}`")
+    if data.get("test"):
+        cmds.append(f"test: `{data['test']}`")
+    if data.get("lint"):
+        cmds.append(f"lint: `{data['lint']}`")
+    if cmds:
+        print(f"Comandos detectados no projeto ({labels[key]}):")
+        for index, cmd in enumerate(cmds, start=1):
+            print(f"{index}. Rodar {cmd}.")
+PY
+)"
+
+    while IFS= read -r line; do
+      [[ -n "$line" ]] || continue
+      detected_lines+=("$line")
+    done <<< "$detected_output"
+    if [[ ${#detected_lines[@]} -gt 0 ]]; then
+      lines+=("${detected_lines[@]}")
+      printf '%s\n' "${lines[@]}"
+      return
+    fi
+  fi
+
+  if should_include_go; then
     lines+=("Comandos especificos do projeto (Go):")
     lines+=("1. Rodar \`gofmt\` nos arquivos Go alterados.")
     if file_exists ".golangci.yml" || file_exists ".golangci.yaml" || file_exists ".golangci.toml"; then
@@ -413,18 +484,18 @@ build_validation_commands() {
     lines+=("4. Rodar \`go vet ./...\` quando esse passo fizer parte do gate do projeto.")
   fi
 
-  if should_include_node && file_exists "package.json"; then
+  if should_include_node; then
     lines+=("Comandos especificos do projeto (Node):")
     lines+=("1. Rodar formatter dos arquivos alterados quando o projeto oferecer esse passo.")
-    lines+=("2. Rodar \`npm test\` ou o comando equivalente do contexto.")
-    lines+=("3. Rodar \`npm run lint\` quando esse passo existir.")
+    lines+=("2. Rodar o comando de teste detectado no workspace afetado.")
+    lines+=("3. Rodar o comando de lint detectado no workspace afetado quando esse passo existir.")
   fi
 
-  if should_include_python && (file_exists "pyproject.toml" || file_exists "requirements.txt"); then
+  if should_include_python; then
     lines+=("Comandos especificos do projeto (Python):")
-    lines+=("1. Rodar \`ruff format .\` ou \`black .\` conforme toolchain do projeto.")
-    lines+=("2. Rodar \`pytest\` ou o comando de teste equivalente do contexto.")
-    lines+=("3. Rodar \`ruff check .\` ou lint equivalente quando disponivel.")
+    lines+=("1. Rodar formatter do projeto quando houver comando detectado.")
+    lines+=("2. Rodar o comando de teste detectado no package afetado.")
+    lines+=("3. Rodar o lint detectado no package afetado quando disponivel.")
   fi
 
   printf '%s\n' "${lines[@]}"
@@ -481,30 +552,6 @@ build_stack_section() {
   printf '%s\n' "${lines[@]}"
 }
 
-build_codex_config() {
-  local base_skills=(agent-governance analyze-project create-prd create-technical-specification create-tasks execute-task refactor review bugfix)
-  local lang_skills=()
-
-  if should_include_go; then
-    lang_skills+=(go-implementation object-calisthenics-go)
-  fi
-  if should_include_node; then
-    lang_skills+=(node-implementation)
-  fi
-  if should_include_python; then
-    lang_skills+=(python-implementation)
-  fi
-
-  local all_skills=("${base_skills[@]}" "${lang_skills[@]}")
-  local output=""
-
-  for skill in "${all_skills[@]}"; do
-    output+="[[skills.config]]\npath = \".agents/skills/$skill\"\nenabled = true\n\n"
-  done
-
-  printf '%b' "$output"
-}
-
 render_template() {
   local template_path="$1"
   shift
@@ -517,7 +564,11 @@ render_template() {
     local value="$2"
     shift 2
     content="$(RENDER_KEY="{{$key}}" RENDER_VAL="$value" awk '
-      BEGIN { k = ENVIRON["RENDER_KEY"]; v = ENVIRON["RENDER_VAL"] }
+      BEGIN {
+        k = ENVIRON["RENDER_KEY"];
+        v = ENVIRON["RENDER_VAL"];
+        gsub(/&/, "\\\\&", v);
+      }
       { gsub(k, v); print }
     ' <<< "$content")"
   done
@@ -577,7 +628,11 @@ fi
 
 if [[ "$INSTALL_CODEX" == "1" ]]; then
   mkdir -p "$PROJECT_DIR/.codex"
-  build_codex_config > "$PROJECT_DIR/.codex/config.toml"
+  _codex_go=0; _codex_node=0; _codex_python=0
+  should_include_go && _codex_go=1
+  should_include_node && _codex_node=1
+  should_include_python && _codex_python=1
+  build_codex_config "$_codex_go" "$_codex_node" "$_codex_python" > "$PROJECT_DIR/.codex/config.toml"
 fi
 
 if [[ "$INSTALL_COPILOT" == "1" ]]; then

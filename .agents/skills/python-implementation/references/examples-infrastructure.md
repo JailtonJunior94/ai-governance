@@ -1,5 +1,3 @@
-> **Carregar quando:** exemplos de graceful shutdown, paginacao cursor-based, versionamento de API em Python — **Escopo:** infraestrutura concreta, exemplos de codigo — **~550tk**
-
 # Exemplos: Infraestrutura
 
 ## Graceful Shutdown (FastAPI + uvicorn)

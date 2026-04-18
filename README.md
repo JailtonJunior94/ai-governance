@@ -159,6 +159,7 @@ O comportamento do instalador pode ser ajustado com variaveis de ambiente:
 |----------|---------|--------|
 | `LINK_MODE` | `symlink` | usa `symlink` para manter uma unica fonte de verdade ou `copy` para instalar um snapshot local |
 | `GENERATE_CONTEXTUAL_GOVERNANCE` | `1` | quando `1`, gera arquivos contextuais; quando `0`, copia os arquivos base sem personalizacao |
+| `CODEX_SKILL_PROFILE` | `minimal` | controla o conjunto de skills em `.codex/config.toml`: `minimal` carrega o baseline operacional enxuto; `full` inclui tambem skills de planejamento e analise |
 
 Exemplos:
 
@@ -171,6 +172,9 @@ LINK_MODE=copy bash install.sh /caminho/do/projeto
 
 # instalacao sem geracao contextual
 GENERATE_CONTEXTUAL_GOVERNANCE=0 bash install.sh /caminho/do/projeto
+
+# Codex com perfil completo de skills
+CODEX_SKILL_PROFILE=full bash install.sh --tools codex --langs all /caminho/do/projeto
 ```
 
 ## Como O Projeto Funciona
@@ -191,6 +195,8 @@ Quando `GENERATE_CONTEXTUAL_GOVERNANCE=1`, o script `.agents/skills/analyze-proj
 - stack principal;
 - frameworks encontrados;
 - ferramentas instaladas.
+
+O gerador usa `detect-toolchain.sh` como fonte primaria para comandos de validacao quando esse detector consegue inferir fmt, test e lint do projeto, inclusive em manifests de subdiretorios.
 
 ### 4. Skills por linguagem
 
@@ -244,7 +250,7 @@ O gerador contextual usa heuristicas locais para reduzir falsos positivos.
 
 ### Stacks detectadas
 
-Atualmente o gerador identifica, quando presentes:
+Atualmente o gerador identifica, quando presentes na raiz ou em subdiretorios relevantes:
 
 - Go;
 - Node.js;
@@ -288,6 +294,9 @@ bash tests/test-install.sh
 
 # valida scripts auxiliares
 bash tests/test-scripts.sh
+
+# valida upgrade e regeneracao de adaptadores
+bash tests/test-upgrade.sh
 ```
 
 ### Atualizacao intencional de snapshots
@@ -305,6 +314,8 @@ O diretorio `tests/fixtures/` contem projetos artificiais que exercitam os cenar
 - `go-microservice`
 - `go-modular`
 - `node-monorepo`
+- `python-monorepo`
+- `polyglot-monorepo`
 
 Os snapshots esperados ficam em `tests/snapshots/` e sao comparados contra o `AGENTS.md` gerado para cada fixture.
 

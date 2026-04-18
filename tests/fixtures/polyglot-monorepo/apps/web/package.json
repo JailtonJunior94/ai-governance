@@ -1,0 +1,8 @@
+{
+  "name": "@polyglot/web",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "vitest run",
+    "lint": "eslint ."
+  }
+}

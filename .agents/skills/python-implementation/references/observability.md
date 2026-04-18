@@ -1,5 +1,3 @@
-> **Carregar quando:** logging, tracing, métricas, health checks Python — **Escopo:** rastreabilidade, diagnóstico, visibilidade operacional — **~400tk**
-
 # Observabilidade Python
 
 ## Objetivo

@@ -1,5 +1,3 @@
-> **Carregar quando:** estrutura de diretorios, DI, injecao de dependencias, layout de modulos — **Escopo:** organizacao de camadas, wiring, composicao — **~600tk**
-
 # Arquitetura
 
 ## Objetivo

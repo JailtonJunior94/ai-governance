@@ -1,5 +1,3 @@
-> **Carregar quando:** factory functions, functional options, builders, adapters, decorators/middleware, facades, strategy, chain of responsibility, observer/eventos, maquina de estado, template method — **Escopo:** design patterns, criacao, estrutura, comportamento — **~2250tk**
-
 # Design Patterns
 
 ## Principios Gerais

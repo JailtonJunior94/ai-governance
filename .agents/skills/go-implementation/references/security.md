@@ -1,5 +1,3 @@
-> **Carregar quando:** autenticação, autorização, validação de input, rate limiting, CORS, tratamento de segredos — **Escopo:** segurança, vulnerabilidades, proteção — **~750tk**
-
 # Segurança
 
 ## Objetivo

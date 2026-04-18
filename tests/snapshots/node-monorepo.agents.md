@@ -92,10 +92,10 @@ Antes de concluir uma alteracao:
 
 Seguir Etapa 4 de `.agents/skills/agent-governance/SKILL.md` como base canonica.
 
-Comandos especificos do projeto (Node):
-1. Rodar formatter dos arquivos alterados quando o projeto oferecer esse passo.
-2. Rodar `npm test` ou o comando equivalente do contexto.
-3. Rodar `npm run lint` quando esse passo existir.
+Comandos detectados no projeto (Node):
+1. Rodar fmt: `pnpm --filter @monorepo/web run fmt`.
+2. Rodar test: `pnpm --filter @monorepo/web run test`.
+3. Rodar lint: `pnpm --filter @monorepo/web run lint`.
 
 ## Restricoes
 

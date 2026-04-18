@@ -1,5 +1,3 @@
-> **Carregar quando:** esqueleto concreto de fluxo end-to-end Go (entidade, use case, handler, teste com suite e mockery) — **Escopo:** domain, application, handler, test — **~1050tk**
-
 # Exemplos: Fluxo End-to-End
 
 ## Sentinel errors do dominio

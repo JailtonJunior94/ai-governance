@@ -11,7 +11,7 @@ Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalha
 O projeto aparenta ser um microservico independente, com foco em contrato de API, inicializacao, dependencias externas e seguranca operacional. A governanca deve preservar o escopo do servico e o seu deploy independente.
 
 Stack detectada: Go.
-Frameworks detectados: Echo,gRPC.
+Frameworks detectados: Echo, gRPC.
 
 ## Estrutura de Pastas
 
@@ -97,10 +97,10 @@ Antes de concluir uma alteracao:
 
 Seguir Etapa 4 de `.agents/skills/agent-governance/SKILL.md` como base canonica.
 
-Comandos especificos do projeto (Go):
-1. Rodar `gofmt` nos arquivos Go alterados.
-3. Rodar primeiro testes direcionados e depois `go test ./...` quando o custo for proporcional.
-4. Rodar `go vet ./...` quando esse passo fizer parte do gate do projeto.
+Comandos detectados no projeto (Go):
+1. Rodar fmt: `gofmt -w .`.
+2. Rodar test: `go test ./...`.
+3. Rodar lint: `golangci-lint run`.
 
 ## Restricoes
 

@@ -1,6 +1,3 @@
-> **Carregar quando:** criacao, propagacao, encapsulamento ou apresentacao de excecoes Python — **Escopo:** hierarquia de erros, dominio vs infra, rastreabilidade — **~500tk**
-> **Base transversal:** `.agents/skills/agent-governance/references/error-handling.md` (modelagem, wrapping, retry, comparacao). Este arquivo contem apenas o delta idiomatico Python.
-
 # Tratamento de Erros Python
 
 ## Modelagem

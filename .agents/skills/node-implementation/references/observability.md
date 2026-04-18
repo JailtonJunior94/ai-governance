@@ -1,5 +1,3 @@
-> **Carregar quando:** logging, tracing, métricas, health checks Node — **Escopo:** rastreabilidade, diagnóstico, visibilidade operacional — **~450tk**
-
 # Observabilidade Node/TypeScript
 
 ## Objetivo

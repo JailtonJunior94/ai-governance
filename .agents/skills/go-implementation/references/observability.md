@@ -1,5 +1,3 @@
-> **Carregar quando:** logging, tracing, métricas, health checks, OpenTelemetry — **Escopo:** rastreabilidade, diagnóstico, visibilidade operacional — **~750tk**
-
 # Observabilidade
 
 ## Objetivo

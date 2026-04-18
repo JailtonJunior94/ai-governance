@@ -1,5 +1,3 @@
-> **Carregar quando:** repositories, transactions, migrations, queries, connection management — **Escopo:** acesso a dados, banco, SQL, ORM — **~550tk**
-
 # Persistencia
 
 ## Objetivo

@@ -184,14 +184,34 @@ fi
 
 # Caso: projeto Node
 if output="$(bash "$DETECT_TOOLCHAIN" "$ROOT_DIR/tests/fixtures/node-monorepo" 2>/dev/null)"; then
-  # Esta fixture nao tem scripts, entao tudo deve ser null
-  if echo "$output" | grep -q '"test":null'; then
-    pass "detect-toolchain: Node project sem scripts retorna null"
+  if echo "$output" | grep -q '"test":"pnpm --filter @monorepo/web run test"'; then
+    pass "detect-toolchain: Node monorepo detecta script de workspace"
   else
-    fail "detect-toolchain: Node project sem scripts nao retorna null"
+    fail "detect-toolchain: Node monorepo nao detecta script de workspace"
+  fi
+  if echo "$output" | grep -q '"lint":"pnpm --filter @monorepo/web run lint"'; then
+    pass "detect-toolchain: Node monorepo detecta lint de workspace"
+  else
+    fail "detect-toolchain: Node monorepo nao detecta lint de workspace"
   fi
 else
   fail "detect-toolchain: Node project falhou"
+fi
+
+# Caso: projeto Python com pyproject em subdiretorio
+if output="$(bash "$DETECT_TOOLCHAIN" "$ROOT_DIR/tests/fixtures/python-monorepo" 2>/dev/null)"; then
+  if echo "$output" | grep -q '"test":"pytest"'; then
+    pass "detect-toolchain: Python em subdiretorio detecta pytest"
+  else
+    fail "detect-toolchain: Python em subdiretorio nao detecta pytest"
+  fi
+  if echo "$output" | grep -q '"lint":"ruff check \."'; then
+    pass "detect-toolchain: Python em subdiretorio detecta ruff"
+  else
+    fail "detect-toolchain: Python em subdiretorio nao detecta ruff"
+  fi
+else
+  fail "detect-toolchain: Python em subdiretorio falhou"
 fi
 
 # Caso: diretorio inexistente

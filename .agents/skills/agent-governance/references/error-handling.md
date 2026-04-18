@@ -1,5 +1,3 @@
-> **Carregar quando:** criação, wrapping, propagação ou apresentação de erros em qualquer linguagem — **Escopo:** modelagem, wrapping, retry, apresentação — **~400tk**
-
 # Tratamento de Erros
 
 - Rule ID: R-ERR-001

@@ -1,5 +1,3 @@
-> **Carregar quando:** retries, circuit breakers, timeouts em chamadas externas, fallbacks Node — **Escopo:** dependências externas, degradação graceful — **~750tk**
-
 # Resiliencia Node/TypeScript
 
 ## Objetivo

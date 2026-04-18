@@ -1,5 +1,3 @@
-> **Carregar quando:** estrutura de projeto Python, organização de módulos, padrões de importação, PEP 8 — **Escopo:** convenções, naming, estrutura — **~350tk**
-
 # Convencoes Python
 
 ## Objetivo

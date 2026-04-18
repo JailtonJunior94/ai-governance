@@ -1,5 +1,3 @@
-> **Carregar quando:** entidades, value objects, aggregate roots, transições de estado, regras de aplicação — **Escopo:** domínio, modelagem, invariantes — **~500tk**
-
 # Modelagem de Domínio
 
 - Rule ID: R-DDD-001

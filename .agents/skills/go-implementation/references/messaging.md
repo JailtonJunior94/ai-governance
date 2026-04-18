@@ -1,5 +1,3 @@
-> **Carregar quando:** produção/consumo de mensagens, eventos, filas, tópicos, outbox pattern, idempotência de consumidores — **Escopo:** messaging, async, eventos — **~850tk**
-
 # Messaging e Eventos
 
 ## Objetivo

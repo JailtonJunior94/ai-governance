@@ -1,5 +1,3 @@
-> **Carregar quando:** retries, circuit breakers, timeouts em chamadas externas, fallbacks, proteção contra falhas transitórias — **Escopo:** dependências externas, degradação — **~550tk**
-
 # Resiliência
 
 ## Objetivo

@@ -1,5 +1,3 @@
-> **Carregar quando:** esqueleto concreto de fluxo end-to-end em Python (entidade, use case, handler, teste) — **Escopo:** domain, application, infra, handler — **~1050tk**
-
 # Exemplos: Fluxo End-to-End Python
 
 ## Erros de domínio

@@ -1,5 +1,3 @@
-> **Carregar quando:** goroutines, channels, errgroup, worker pool, cancelamento, sincronização — **Escopo:** concorrência, paralelismo, fan-out — **~800tk**
-
 # Concorrência
 
 ## Objetivo

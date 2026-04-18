@@ -1,5 +1,3 @@
-> **Carregar quando:** estrutura de diretórios, DI, injeção de dependências, layout de packages — **Escopo:** organização de camadas, wiring, composição — **~900tk**
-
 # Arquitetura
 
 ## Objetivo

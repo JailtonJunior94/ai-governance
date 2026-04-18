@@ -90,10 +90,10 @@ Antes de concluir uma alteracao:
 
 Seguir Etapa 4 de `.agents/skills/agent-governance/SKILL.md` como base canonica.
 
-Comandos especificos do projeto (Python):
-1. Rodar `ruff format .` ou `black .` conforme toolchain do projeto.
-2. Rodar `pytest` ou o comando de teste equivalente do contexto.
-3. Rodar `ruff check .` ou lint equivalente quando disponivel.
+Comandos detectados no projeto (Python):
+1. Rodar fmt: `ruff format .`.
+2. Rodar test: `pytest`.
+3. Rodar lint: `ruff check .`.
 
 ## Restricoes
 

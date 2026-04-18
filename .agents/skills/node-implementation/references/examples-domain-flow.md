@@ -1,5 +1,3 @@
-> **Carregar quando:** esqueleto concreto de fluxo end-to-end em Node/TypeScript (entidade, use case, handler, teste) — **Escopo:** domain, application, infra, handler — **~1050tk**
-
 # Exemplos: Fluxo End-to-End Node/TypeScript
 
 ## Erros de domínio

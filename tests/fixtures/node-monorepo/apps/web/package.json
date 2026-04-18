@@ -1,4 +1,9 @@
 {
   "name": "@monorepo/web",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "scripts": {
+    "fmt": "prettier --write .",
+    "test": "vitest run",
+    "lint": "eslint ."
+  }
 }

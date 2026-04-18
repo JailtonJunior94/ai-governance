@@ -1,5 +1,3 @@
-> **Carregar quando:** shutdown gracioso, signal handling (SIGTERM/SIGINT), drain de conexões HTTP, encerramento de workers ou streams — **Escopo:** process lifecycle, server close, cleanup — **~950tk**
-
 # Graceful Lifecycle Node.js
 
 ## Objetivo

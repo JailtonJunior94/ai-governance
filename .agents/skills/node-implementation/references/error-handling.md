@@ -1,6 +1,3 @@
-> **Carregar quando:** criacao, propagacao, encapsulamento ou apresentacao de erros Node/TypeScript — **Escopo:** erros operacionais, bugs, rastreabilidade — **~450tk**
-> **Base transversal:** `.agents/skills/agent-governance/references/error-handling.md` (modelagem, wrapping, retry, comparacao). Este arquivo contem apenas o delta idiomatico Node/TypeScript.
-
 # Tratamento de Erros Node/TypeScript
 
 ## Modelagem

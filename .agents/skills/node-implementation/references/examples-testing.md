@@ -1,5 +1,3 @@
-> **Carregar quando:** exemplos de test doubles, parametrized tests, validacao de DTOs — **Escopo:** testes concretos, exemplos de codigo — **~400tk**
-
 # Exemplos: Testes e Validacao
 
 ## Factory de mock para fronteira

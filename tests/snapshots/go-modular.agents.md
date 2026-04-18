@@ -94,11 +94,10 @@ Antes de concluir uma alteracao:
 
 Seguir Etapa 4 de `.agents/skills/agent-governance/SKILL.md` como base canonica.
 
-Comandos especificos do projeto (Go):
-1. Rodar `gofmt` nos arquivos Go alterados.
-2. Rodar `golangci-lint run` como passo de lint.
-3. Rodar primeiro testes direcionados e depois `go test ./...` quando o custo for proporcional.
-4. Rodar `go vet ./...` quando esse passo fizer parte do gate do projeto.
+Comandos detectados no projeto (Go):
+1. Rodar fmt: `gofmt -w .`.
+2. Rodar test: `go test ./...`.
+3. Rodar lint: `golangci-lint run`.
 
 ## Restricoes
 

@@ -55,6 +55,9 @@ LINK_MODE="${LINK_MODE:-symlink}"
 GENERATE_CONTEXTUAL_GOVERNANCE="${GENERATE_CONTEXTUAL_GOVERNANCE:-1}"
 GOVERNANCE_GENERATOR="$RULES_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
 
+# shellcheck source=scripts/lib/codex-config.sh
+source "$RULES_DIR/scripts/lib/codex-config.sh"
+
 if [[ "$RULES_DIR" == "$PROJECT_DIR" ]]; then
   echo "ERRO: o diretorio alvo nao pode ser o proprio repositorio de regras."
   exit 1
@@ -65,6 +68,7 @@ BASE_SKILLS=(create-prd create-technical-specification create-tasks execute-task
 
 # Skills de linguagem (selecionaveis pelo usuario)
 LANG_SKILLS=()
+
 
 dry_log() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -311,7 +315,11 @@ fi
 if [[ $INSTALL_CODEX -eq 1 ]]; then
   echo "-> Instalando Codex..."
   safe_mkdir "$PROJECT_DIR/.codex"
-  safe_cp "$RULES_DIR/.codex/config.toml" "$PROJECT_DIR/.codex/config.toml"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    dry_log "gerar .codex/config.toml dinamico"
+  else
+    build_codex_config "$INSTALL_GO" "$INSTALL_NODE" "$INSTALL_PYTHON" > "$PROJECT_DIR/.codex/config.toml"
+  fi
 fi
 
 # Copilot

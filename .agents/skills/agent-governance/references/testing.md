@@ -1,5 +1,3 @@
-> **Carregar quando:** validadores, adapters, persistência, IO, gates de validação — **Escopo:** cobertura mínima, determinismo, gates transversais — **~400tk**
-
 # Testes
 
 - Rule ID: R-TEST-001

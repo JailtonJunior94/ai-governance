@@ -1,5 +1,3 @@
-> **Carregar quando:** shutdown gracioso, signal handling (SIGTERM/SIGINT), drain de conexoes, cleanup de asyncio tasks, encerramento de workers — **Escopo:** lifecycle, signals, encerramento — **~650tk**
-
 # Graceful Lifecycle
 
 ## Objetivo

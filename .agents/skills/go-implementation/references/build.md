@@ -1,5 +1,3 @@
-> **Carregar quando:** Dockerfile, Makefile, pipeline de CI, build flags, imagem de container, gates de qualidade — **Escopo:** build, packaging, CI — **~1000tk**
-
 # Build, Container e CI
 
 ## Objetivo

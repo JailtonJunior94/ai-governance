@@ -208,6 +208,33 @@ else
 fi
 
 # ============================================================
+# Caso 7: Codex dinamico sem geracao contextual
+# ============================================================
+NON_CONTEXTUAL_TARGET="$TMP_DIR/non-contextual-project"
+mkdir -p "$NON_CONTEXTUAL_TARGET"
+echo '{"name":"non-contextual"}' > "$NON_CONTEXTUAL_TARGET/package.json"
+
+GENERATE_CONTEXTUAL_GOVERNANCE=0 bash "$INSTALL_SCRIPT" --tools codex --langs node "$NON_CONTEXTUAL_TARGET" > /dev/null 2>&1
+
+if grep -q '".agents/skills/node-implementation"' "$NON_CONTEXTUAL_TARGET/.codex/config.toml"; then
+  pass "non-contextual-codex: inclui skill Node selecionada"
+else
+  fail "non-contextual-codex: nao inclui skill Node selecionada"
+fi
+
+if grep -q '".agents/skills/go-implementation"' "$NON_CONTEXTUAL_TARGET/.codex/config.toml"; then
+  fail "non-contextual-codex: inclui skill Go indevida"
+else
+  pass "non-contextual-codex: nao inclui skill Go indevida"
+fi
+
+if grep -q '".agents/skills/analyze-project"' "$NON_CONTEXTUAL_TARGET/.codex/config.toml"; then
+  fail "non-contextual-codex: inclui skill pesada fora do perfil minimal"
+else
+  pass "non-contextual-codex: nao inclui skill pesada fora do perfil minimal"
+fi
+
+# ============================================================
 # Resumo
 # ============================================================
 echo ""

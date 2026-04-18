@@ -1,5 +1,3 @@
-> **Carregar quando:** exemplos de fixtures, parametrize, validacao de schemas — **Escopo:** testes concretos, exemplos de codigo — **~400tk**
-
 # Exemplos: Testes e Validacao
 
 ## Fixture com factory

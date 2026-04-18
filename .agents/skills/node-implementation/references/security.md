@@ -1,6 +1,3 @@
-> **Carregar quando:** autenticacao, autorizacao, validacao de input, rate limiting, CORS, tratamento de segredos — **Escopo:** seguranca Node/TypeScript — **~500tk**
-> **Base transversal:** `.agents/skills/agent-governance/references/security.md` (segredos, filesystem, execucao de comandos, input externo, dependencias). Este arquivo contem apenas o delta idiomatico Node/TypeScript.
-
 # Seguranca Node/TypeScript
 
 ## Input Validation

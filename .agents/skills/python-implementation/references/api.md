@@ -1,5 +1,3 @@
-> **Carregar quando:** handlers HTTP Python, middlewares, DTOs, validação de request, serialização — **Escopo:** transporte, request/response, contratos Python — **~450tk**
-
 # API (HTTP) Python
 
 ## Objetivo

@@ -1,5 +1,3 @@
-> **Carregar quando:** estratégia de testes, mocking, testcontainers, fixtures, cobertura — **Escopo:** unit, integration, pytest — **~800tk**
-
 # Testes Python
 
 ## Objetivo

@@ -24,11 +24,16 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 - Usar tipos customizados (`type ValidationError struct{...}`) quando o chamador precisar extrair dados com `errors.As`.
 - Formatar com `gofmt`. Usar `go test ./...` como gate minimo.
 
+**Patterns frequentes (inline — evitar carregar patterns.md para estes)**
+- **Factory Function:** Usar `New*(deps...) (*T, error)` quando construcao exigir validacao de invariantes ou dependencias obrigatorias. Retornar `(T, error)` ou `*T`. Nao usar factory abstrata para um unico tipo concreto.
+- **Functional Options:** Usar `func With*(v) Option` quando o objeto tiver muitos campos opcionais. Preferir sobre builder fluente: `func NewServer(addr string, opts ...ServerOption) *Server`. Cada option e uma `func(*T)` que modifica o alvo.
+- **Adapter:** Usar struct que implementa interface do consumidor e delega para tipo externo quando integrar dependencia incompativel. Repository concreto e o exemplo mais comum.
+
 **Etapa 2: Selecionar apenas o contexto necessario**
 1. Ler `references/interfaces.md` quando a tarefa introduzir, remover ou remodelar interfaces, construtores ou fronteiras de dependencia.
 2. Ler `references/generics.md` quando a tarefa introduzir ou alterar parametros de tipo, constraints ou componentes reutilizaveis com generics.
 3. Ler `references/concurrency.md` quando a tarefa usar goroutines, channels, cancelamento, worker pools ou sincronizacao.
-4. Ler `references/patterns.md` quando a tarefa envolver factory functions, functional options, builders, adapters, decorators/middleware, facades, strategy, chain of responsibility, observer/eventos, maquina de estado ou template method. **Arquivo grande (~2250tk)** — quando apenas uma categoria for necessaria, ler somente a secao relevante: Creational (linhas 19-63), Structural (linhas 64-139), Behavioral (linhas 140-261).
+4. Ler `references/patterns.md` quando a tarefa envolver decorators/middleware, facades, strategy, chain of responsibility, observer/eventos, maquina de estado ou template method. Factory Function, Functional Options e Adapter ja estao inline acima — carregar o arquivo completo apenas para os demais patterns. Quando apenas uma categoria for necessaria, ler somente a secao relevante: Structural (linhas 62-137), Behavioral (linhas 138-259).
 5. Ler `references/observability.md` quando a tarefa envolver logging, tracing, metricas ou health checks.
 6. Ler `references/api.md` quando a tarefa envolver handlers HTTP/gRPC, middlewares, DTOs ou serializacao.
 7. Ler `references/persistence.md` quando a tarefa envolver repositories, transactions, migrations, queries ou connection management.

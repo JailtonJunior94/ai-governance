@@ -1,5 +1,3 @@
-> **Carregar quando:** parâmetros de tipo, constraints, componentes reutilizáveis com generics — **Escopo:** type parameters, reusabilidade tipada — **~600tk**
-
 # Generics
 
 ## Quando usar
