@@ -54,6 +54,10 @@ Para tarefas que alteram codigo, carregar a skill:
 
 {{REGRAS_LINGUAGEM}}
 
+Para tarefas de correcao de bugs com remediacao e teste de regressao, carregar tambem:
+
+- `.agents/skills/bugfix/SKILL.md`
+
 ## Referencias da Skill
 
 Ler conforme necessidade:

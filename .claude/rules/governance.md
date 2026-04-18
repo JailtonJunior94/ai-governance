@@ -24,7 +24,7 @@ Se duas regras do mesmo nível conflitarem:
 - prevalece `hard` sobre `guideline`
 - se a severidade empatar, prevalece a regra mais restritiva para correção, segurança e determinismo
 - convenção explícita local prevalece sobre o guia da Uber quando documentada nas referências
-- `go-implementation` prevalece sobre `object-calisthenics-go` quando houver conflito (ex: tipos concretos vs wrapping adicional) — object calisthenics é ferramenta de revisão e heurística de design, não substitui as diretrizes de implementação
+- `go-implementation` prevalece sobre `object-calisthenics-go` quando houver conflito — object calisthenics é ferramenta de revisão e heurística de design, não substitui as diretrizes de implementação. Exemplo prático: `architecture.md` define "preferir tipos concretos por padrão"; OC regra #3 sugere "encapsular primitivos de domínio". Neste caso, encapsular apenas quando o valor carregar invariante de domínio (ex: `OrderID`, `Email`), não para primitivos sem regra de validação
 
 ## Política de Evidência
 - Toda alteração deve ser justificável pelo PRD, por regra explícita ou por necessidade técnica demonstrável.

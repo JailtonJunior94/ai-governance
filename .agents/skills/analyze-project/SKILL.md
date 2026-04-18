@@ -18,7 +18,10 @@ description: Analisa a arquitetura de um projeto (monolito, monolito modular, mo
    - **Monolito Modular**: diretorio unico mas com pastas de modulos/dominios independentes (ex: `modules/`, `domains/`, `internal/` com subdiretorios por bounded context), cada um com seus proprios modelos e servicos.
    - **Monorepo**: multiplos projetos/servicos independentes sob a mesma raiz (ex: `services/`, `apps/`, `packages/`, presenca de workspaces em `package.json`, `go.work`, `pnpm-workspace.yaml`, `nx.json`, `turbo.json`, `lerna.json`).
    - **Microservico**: projeto unico que faz parte de um ecossistema maior (Dockerfile na raiz, manifests k8s, servico isolado).
-2. Registrar a classificacao e as evidencias encontradas.
+2. Registrar a classificacao e as evidencias encontradas:
+   - Tipo detectado (monolito, monolito modular, monorepo, microservico).
+   - Arquivos ou pastas que sustentam a classificacao (ex: `go.work`, `services/`, `Dockerfile`).
+   - Se a classificacao for por default (nenhum padrao forte detectado), declarar explicitamente que e uma suposicao.
 
 **Etapa 3: Detectar stack tecnologica**
 1. Identificar linguagens principais por presenca de arquivos-chave:

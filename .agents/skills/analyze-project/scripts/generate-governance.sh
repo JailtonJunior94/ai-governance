@@ -46,6 +46,7 @@ detect_architecture_type() {
     return
   fi
 
+  echo "AVISO: arquitetura nao detectada com alta confianca, assumindo monolito." >&2
   printf 'monolito'
 }
 
@@ -249,6 +250,7 @@ build_language_rules() {
 
   if file_exists "go.mod"; then
     output+="Para tarefas que alteram codigo Go, carregar tambem:\n\n- \`.agents/skills/go-implementation/SKILL.md\`\n"
+    output+="\nPara tarefas de revisao ou refatoracao incremental de design em Go guiadas por heuristicas de object calisthenics, carregar tambem:\n\n- \`.agents/skills/object-calisthenics-go/SKILL.md\`\n"
   fi
 
   printf '%b' "$output"
@@ -270,7 +272,17 @@ build_language_references() {
     output+="- \`.agents/skills/go-implementation/references/api.md\`\n"
     output+="- \`.agents/skills/go-implementation/references/persistence.md\`\n"
     output+="- \`.agents/skills/go-implementation/references/configuration.md\`\n"
+    output+="- \`.agents/skills/go-implementation/references/resilience.md\`\n"
+    output+="- \`.agents/skills/go-implementation/references/messaging.md\`\n"
+    output+="- \`.agents/skills/go-implementation/references/security.md\`\n"
+    output+="- \`.agents/skills/go-implementation/references/tests.md\`\n"
     output+="- \`.agents/skills/go-implementation/references/implementation-examples.md\`\n"
+    output+="- \`.agents/skills/go-implementation/references/build.md\`\n"
+    output+="- \`.agents/skills/go-implementation/references/graceful-lifecycle.md\`\n"
+    output+="\n## Referencias da Skill Object Calisthenics Go\n\nLer conforme necessidade:\n\n"
+    output+="- \`.agents/skills/object-calisthenics-go/references/rules.md\`\n"
+    output+="- \`.agents/skills/object-calisthenics-go/references/go-mapping.md\`\n"
+    output+="- \`.agents/skills/object-calisthenics-go/references/evaluation-guide.md\`\n"
   fi
 
   printf '%b' "$output"
@@ -386,16 +398,36 @@ render_template \
   "RESTRICOES_ARQUITETURA" "$ARCHITECTURE_RESTRICTIONS" \
   > "$PROJECT_DIR/AGENTS.md"
 
+AI_TOOL_TEMPLATE="$SKILL_DIR/assets/ai-tool-template.md"
+
 if [[ "$INSTALL_CLAUDE" == "1" ]]; then
-  render_template "$SKILL_DIR/assets/claude-template.md" "SECAO_STACK" "$STACK_SECTION" > "$PROJECT_DIR/CLAUDE.md"
+  render_template "$AI_TOOL_TEMPLATE" \
+    "TOOL_NAME" "Claude Code" \
+    "TOOL_INSTRUCTION" "fonte canonica das regras" \
+    "CONFIG_LINE_2" "\`.claude/skills/\` sao symlinks para \`.agents/skills/\` — a fonte de verdade e sempre \`.agents/skills/\`." \
+    "CONFIG_LINE_3" "\`.claude/agents/\` sao wrappers leves que delegam para a habilidade canonica." \
+    "SECAO_STACK" "$STACK_SECTION" \
+    > "$PROJECT_DIR/CLAUDE.md"
 fi
 
 if [[ "$INSTALL_GEMINI" == "1" ]]; then
-  render_template "$SKILL_DIR/assets/gemini-template.md" "SECAO_STACK" "$STACK_SECTION" > "$PROJECT_DIR/GEMINI.md"
+  render_template "$AI_TOOL_TEMPLATE" \
+    "TOOL_NAME" "Gemini CLI" \
+    "TOOL_INSTRUCTION" "fonte canonica das regras" \
+    "CONFIG_LINE_2" "\`.agents/skills/\` e a fonte de verdade dos fluxos procedurais." \
+    "CONFIG_LINE_3" "\`.gemini/commands/\` sao adaptadores finos que apontam para a habilidade correta." \
+    "SECAO_STACK" "$STACK_SECTION" \
+    > "$PROJECT_DIR/GEMINI.md"
 fi
 
 if [[ "$INSTALL_COPILOT" == "1" ]]; then
-  render_template "$SKILL_DIR/assets/copilot-template.md" "SECAO_STACK" "$STACK_SECTION" > "$PROJECT_DIR/.github/copilot-instructions.md"
+  render_template "$AI_TOOL_TEMPLATE" \
+    "TOOL_NAME" "GitHub Copilot CLI" \
+    "TOOL_INSTRUCTION" "instrucao principal" \
+    "CONFIG_LINE_2" "\`.agents/skills/\` e a fonte de verdade dos fluxos procedurais." \
+    "CONFIG_LINE_3" "\`.github/agents/\` sao wrappers leves que apontam para a habilidade correta." \
+    "SECAO_STACK" "$STACK_SECTION" \
+    > "$PROJECT_DIR/.github/copilot-instructions.md"
 fi
 
 printf 'Arquitetura detectada: %s\n' "$ARCHITECTURE_TYPE"

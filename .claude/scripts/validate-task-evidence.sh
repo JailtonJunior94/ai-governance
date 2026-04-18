@@ -26,17 +26,27 @@ require_pattern() {
   fi
 }
 
-# Contexto carregado (PRD e TechSpec)
-require_pattern "contexto carregado" "seção Contexto Carregado"
+require_heading() {
+  local pattern="$1"
+  local label="$2"
+
+  if ! grep -Eiq "^#+[[:space:]]+$pattern" "$report_file"; then
+    echo "FALTANDO: $label"
+    missing=1
+  fi
+}
+
+# Contexto carregado (PRD e TechSpec) — exigir como heading Markdown
+require_heading "contexto carregado" "seção Contexto Carregado"
 require_pattern "PRD[[:space:]]*:" "referência ao PRD consultado"
 require_pattern "TechSpec[[:space:]]*:" "referência à TechSpec consultada"
 
-# Seções obrigatórias
-require_pattern "comandos executados" "seção Comandos Executados"
-require_pattern "arquivos alterados" "seção Arquivos Alterados"
-require_pattern "resultados de validação" "seção Resultados de Validação"
-require_pattern "suposições" "seção Suposições"
-require_pattern "riscos residuais" "seção Riscos Residuais"
+# Seções obrigatórias — exigir como heading Markdown
+require_heading "comandos executados" "seção Comandos Executados"
+require_heading "arquivos alterados" "seção Arquivos Alterados"
+require_heading "resultados de validac" "seção Resultados de Validação"
+require_heading "suposic" "seção Suposições"
+require_heading "riscos residuais" "seção Riscos Residuais"
 
 # Exigir um estado terminal canônico
 if ! grep -Eiq "estado[[:space:]]*:[[:space:]]*(blocked|failed|done)" "$report_file"; then

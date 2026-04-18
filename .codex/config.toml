@@ -33,3 +33,11 @@ enabled = true
 [[skills.config]]
 path = ".agents/skills/review"
 enabled = true
+
+[[skills.config]]
+path = ".agents/skills/object-calisthenics-go"
+enabled = true
+
+[[skills.config]]
+path = ".agents/skills/bugfix"
+enabled = true

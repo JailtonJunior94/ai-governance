@@ -47,8 +47,11 @@ def main():
     parser.add_argument("--input", required=True, help="caminho para arquivo JSON contendo uma lista de bugs")
     args = parser.parse_args()
 
-    with open(args.input, "r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+    try:
+        with open(args.input, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"arquivo JSON invalido em {args.input}: {exc}") from exc
 
     if not isinstance(payload, list) or not payload:
         raise ValueError("o arquivo deve conter uma lista JSON nao vazia de bugs")

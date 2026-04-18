@@ -8,7 +8,19 @@ set -euo pipefail
 
 RULES_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="${1:-.}"
+
+if [[ ! -d "$PROJECT_DIR" ]]; then
+  echo "ERRO: diretorio alvo nao encontrado: $PROJECT_DIR"
+  exit 1
+fi
+
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
+
+if [[ ! -w "$PROJECT_DIR" ]]; then
+  echo "ERRO: sem permissao de escrita em: $PROJECT_DIR"
+  exit 1
+fi
+
 LINK_MODE="${LINK_MODE:-symlink}"
 GENERATE_CONTEXTUAL_GOVERNANCE="${GENERATE_CONTEXTUAL_GOVERNANCE:-1}"
 GOVERNANCE_GENERATOR="$RULES_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
@@ -18,7 +30,7 @@ if [[ "$RULES_DIR" == "$PROJECT_DIR" ]]; then
   exit 1
 fi
 
-SKILLS=(create-prd create-technical-specification create-tasks execute-task refactor review analyze-project)
+SKILLS=(create-prd create-technical-specification create-tasks execute-task refactor review analyze-project agent-governance go-implementation object-calisthenics-go bugfix)
 
 link_or_copy_dir() {
   local source="$1"
@@ -72,7 +84,8 @@ case "$selection" in
     INSTALL_CLAUDE=1; INSTALL_GEMINI=1; INSTALL_CODEX=1; INSTALL_COPILOT=1
     ;;
   *)
-    for num in $selection; do
+    read -ra nums <<< "$selection"
+    for num in "${nums[@]}"; do
       case "$num" in
         1) INSTALL_CLAUDE=1 ;;
         2) INSTALL_GEMINI=1 ;;
@@ -135,7 +148,6 @@ if [[ $INSTALL_COPILOT -eq 1 ]]; then
   for skill in "${SKILLS[@]}"; do
     link_or_copy_skill "$RULES_DIR/.agents/skills/$skill" "../../.agents/skills/$skill" "$PROJECT_DIR/.github/skills/$skill"
   done
-  cp "$RULES_DIR/.github/agents/"*.md "$PROJECT_DIR/.github/agents/" 2>/dev/null || \
   cp "$RULES_DIR/.github/agents/"*.agent.md "$PROJECT_DIR/.github/agents/"
 fi
 

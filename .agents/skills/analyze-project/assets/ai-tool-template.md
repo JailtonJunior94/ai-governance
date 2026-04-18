@@ -1,12 +1,12 @@
-# Claude Code
+# {{TOOL_NAME}}
 
-Use `AGENTS.md` como fonte canonica das regras deste repositorio.
+Use `AGENTS.md` como {{TOOL_INSTRUCTION}} deste repositorio.
 
 ## Instrucoes
 
 1. Ler `AGENTS.md` no inicio da sessao.
-2. `.claude/skills/` sao symlinks para `.agents/skills/` — a fonte de verdade e sempre `.agents/skills/`.
-3. `.claude/agents/` sao wrappers leves que delegam para a habilidade canonica.
+2. {{CONFIG_LINE_2}}
+3. {{CONFIG_LINE_3}}
 4. Carregar referencias adicionais apenas quando a tarefa exigir.
 5. Preservar estilo, arquitetura e fronteiras existentes antes de propor mudancas.
 6. Validar mudancas com comandos proporcionais ao risco.
