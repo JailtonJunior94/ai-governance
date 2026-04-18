@@ -1,152 +1,241 @@
 # ai-governance
 
-Base de regras compartilhadas para uso com agentes de IA em diferentes CLIs.
+Governanca reutilizavel para agentes de IA em diferentes CLIs, com skills canonicas, adaptadores por ferramenta e geracao contextual de instrucoes para cada projeto alvo.
 
-O instalador gera `AGENTS.md` e adaptadores de forma contextual a partir da estrutura real do projeto alvo. Cada skill e versionada, carrega referencias sob demanda e pode ser verificada e atualizada em projetos ja instalados.
+O objetivo do projeto e oferecer uma base unica para instalar e manter instrucoes operacionais consistentes em repositórios reais, sem duplicar regras entre Claude Code, Codex, Gemini CLI e GitHub Copilot.
 
-## Estrutura
+> Last reviewed: 2026-04-18
 
-```
-.agents/skills/                          <- fonte canonica de toda habilidade
-  create-prd/                            <- PRD de produto
-  create-technical-specification/        <- especificacao tecnica e ADRs
-  create-tasks/                          <- decomposicao em tarefas
-  execute-task/                          <- implementacao com evidencias
-  refactor/                              <- refatoracao segura
-  review/                                <- revisao de codigo
-  bugfix/                                <- correcao de bugs com remediacao e teste de regressao
-  agent-governance/                      <- regras transversais (DDD, seguranca, erros, testes)
-  go-implementation/                     <- regras e referencias para Go
-  object-calisthenics-go/                <- heuristicas de object calisthenics adaptadas para Go
-  analyze-project/                       <- deteccao de arquitetura e geracao de governanca
+## Visao Geral
 
-AGENTS.md                                <- regra canonica compartilhada
-CLAUDE.md                                <- adaptador para Claude Code
-GEMINI.md                                <- adaptador para Gemini CLI
-.github/copilot-instructions.md          <- adaptador para GitHub Copilot CLI
-.codex/config.toml                       <- ativacao de skills no Codex
+`ai-governance` organiza uma camada compartilhada de governanca para agentes de IA que trabalham com codigo. Em vez de manter prompts, regras e instrucoes separados para cada ferramenta, o repositorio centraliza skills, referencias e adaptadores leves em uma unica base.
 
-.claude/skills/                          <- symlinks -> .agents/skills/
-.claude/agents/                          <- wrappers leves (subagentes)
-.claude/rules/                           <- governanca transversal
+Ele foi pensado para projetos que precisam de previsibilidade operacional em tarefas como:
 
-.gemini/commands/                        <- wrappers leves para Gemini CLI
-.github/agents/                          <- wrappers leves para Copilot CLI
+- analise e entendimento de contexto;
+- review e refactor;
+- bugfix com validacao;
+- criacao de PRD, especificacao tecnica e tarefas;
+- execucao guiada por skill.
 
-tests/                                   <- testes de snapshot para geracao de governanca
-upgrade.sh                               <- verificacao e atualizacao de skills em projetos
-```
+## Principais Beneficios
 
-## Contrato de Portabilidade
+- uma fonte canonica unica em `.agents/skills/`;
+- adaptadores leves para multiplas ferramentas, sem duplicacao de processo;
+- geracao contextual de `AGENTS.md` e arquivos auxiliares a partir do projeto alvo;
+- versionamento de skills para atualizacao controlada em instalacoes por copia;
+- carregamento sob demanda de referencias para reduzir ruido e custo de contexto.
 
-- **Fonte de verdade procedural**: `.agents/skills/`
-- **Regras canonicas**: `AGENTS.md`
-- **Adaptadores por plataforma**: wrappers leves que referenciam a habilidade canonica
-  - Claude Code: `.claude/skills/` (symlinks), `.claude/agents/`
-  - Codex: `.codex/config.toml`
-  - Copilot CLI: `.github/copilot-instructions.md`, `.github/agents/`
-  - Gemini CLI: `GEMINI.md`, `.gemini/commands/`
-
-## Principio
-
-O processo detalhado mora na habilidade canonica em `.agents/skills/`. Comandos, agentes e adaptadores por plataforma apenas roteiam para a habilidade adequada — nunca duplicam o conteudo.
-
----
-
-## Instalacao
+## Quick Start
 
 ```bash
 bash install.sh /caminho/do/projeto
 ```
 
-O instalador pergunta quais ferramentas instalar (Claude, Gemini, Codex, Copilot) e gera governanca contextualizada a partir da deteccao automatica de arquitetura e stack.
+O instalador pergunta:
 
-### Opcoes
+1. quais ferramentas devem ser instaladas;
+2. quais linguagens devem receber skills de implementacao;
+3. gera a governanca contextual no projeto alvo.
 
-| Variavel | Default | Descricao |
-|----------|---------|-----------|
-| `LINK_MODE` | `symlink` | `symlink` mantem fonte unica; `copy` e mais portavel |
-| `GENERATE_CONTEXTUAL_GOVERNANCE` | `1` | `1` detecta e gera; `0` copia sem personalizar |
-
-### Exemplos
-
-Instalacao com symlinks (padrao):
-
-```bash
-bash install.sh /caminho/do/projeto
-```
-
-Instalacao portavel com copia:
-
-```bash
-LINK_MODE=copy bash install.sh /caminho/do/projeto
-```
-
-### Simulacao com --dry-run
-
-Para ver o que seria criado ou sobrescrito sem alterar nenhum arquivo:
+Para revisar a instalacao antes de gravar arquivos:
 
 ```bash
 bash install.sh --dry-run /caminho/do/projeto
 ```
 
-O output lista cada operacao que seria executada, prefixada com `[dry-run]`:
+## Quando Usar
 
-```text
-Selecione as ferramentas que deseja instalar:
+Use este repositorio quando voce quiser:
 
-  1) claude
-  2) gemini
-  3) codex
-  4) copilot
-  A) Todas
+- padronizar o comportamento de agentes em diferentes ferramentas;
+- instalar governanca de IA em um projeto existente sem duplicar regras;
+- adaptar instrucoes ao contexto real do repositorio alvo;
+- manter skills versionadas e atualizaveis ao longo do tempo.
 
-Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: A
+## Ferramentas Suportadas
 
-Ferramentas selecionadas: claude gemini codex copilot
+| Ferramenta | Integracao |
+|------------|------------|
+| Claude Code | `CLAUDE.md`, `.claude/skills/`, `.claude/agents/`, `.claude/rules/`, `.claude/scripts/` |
+| Codex | `.codex/config.toml` |
+| Gemini CLI | `GEMINI.md`, `.gemini/commands/` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/agents/`, `.github/skills/` |
 
--> Instalando Claude Code...
-  [dry-run] ln -sfn /fonte/.agents/skills/create-prd -> /alvo/.claude/skills/create-prd
-  [dry-run] ln -sfn /fonte/.agents/skills/review -> /alvo/.claude/skills/review
-  [dry-run] cp /fonte/.claude/rules/governance.md -> /alvo/.claude/rules/governance.md
-  ...
--> Instalando Gemini CLI...
-  [dry-run] cp /fonte/.gemini/commands/review.toml -> /alvo/.gemini/commands/review.toml
-  ...
+## O Que E Instalado
 
--> [dry-run] Geracao de governanca contextual seria executada aqui.
+Dependendo das ferramentas e linguagens selecionadas durante a instalacao, o projeto alvo recebe:
 
-[dry-run] Nenhum arquivo foi alterado.
+| Tipo | Arquivos ou diretorios |
+|------|------------------------|
+| Base canonica | `AGENTS.md`, `.agents/skills/` |
+| Claude Code | `CLAUDE.md`, `.claude/skills/`, `.claude/agents/`, `.claude/rules/`, `.claude/scripts/` |
+| Gemini CLI | `GEMINI.md`, `.gemini/commands/` |
+| Codex | `.codex/config.toml` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/agents/`, `.github/skills/` |
+
+As skills canonicas ficam sempre em `.agents/skills/`. Os adaptadores apenas referenciam ou copiam essa base, sem redefinir o processo.
+
+## Estrutura do Repositorio
+
+| Caminho | Papel |
+|--------|-------|
+| `.agents/skills/` | fonte canonica das skills e referencias |
+| `.claude/` | integracao e wrappers para Claude Code |
+| `.gemini/` | comandos para Gemini CLI |
+| `.codex/` | configuracao para Codex |
+| `.github/` | integracao para GitHub Copilot |
+| `tests/` | testes de snapshot, scripts e fluxo de instalacao |
+| `install.sh` | instalador interativo da governanca |
+| `upgrade.sh` | verificador e atualizador de skills copiadas |
+
+## Instalacao
+
+### Pre-requisitos
+
+Antes de instalar em um projeto alvo, tenha no ambiente:
+
+- `bash`;
+- permissoes de escrita no diretorio alvo;
+- um projeto existente para receber a governanca.
+
+Para desenvolvimento e execucao de todos os testes deste repositorio, `python3` tambem e utilizado em scripts auxiliares e validacoes.
+
+### Fluxo Basico
+
+Execute:
+
+```bash
+bash install.sh /caminho/do/projeto
 ```
 
-**Motivador**: para um script que escreve e sobrescreve arquivos em projetos alvo, a ausencia de simulacao era um risco operacional. `--dry-run` permite auditoria antes de qualquer efeito colateral.
+Durante a execucao, o instalador pergunta:
 
----
+1. quais ferramentas devem ser instaladas: `claude`, `gemini`, `codex`, `copilot` ou todas;
+2. quais linguagens devem receber skills de implementacao: `go`, `node`, `python` ou todas.
 
-## Atualizacao de Skills com upgrade.sh
+Se nenhuma linguagem for informada, o instalador usa Go como padrao.
 
-Quando o `install.sh` e executado com `LINK_MODE=copy`, o projeto alvo fica com um snapshot congelado das skills. Para verificar se estao desatualizadas e atualiza-las:
+### Dry Run
+
+Para inspecionar o que seria criado sem alterar arquivos:
+
+```bash
+bash install.sh --dry-run /caminho/do/projeto
+```
+
+Esse modo e util quando voce quer auditar a instalacao antes de gravar arquivos em um repositorio real.
+
+### Modos de Instalacao
+
+O comportamento do instalador pode ser ajustado com variaveis de ambiente:
+
+| Variavel | Default | Efeito |
+|----------|---------|--------|
+| `LINK_MODE` | `symlink` | usa `symlink` para manter uma unica fonte de verdade ou `copy` para instalar um snapshot local |
+| `GENERATE_CONTEXTUAL_GOVERNANCE` | `1` | quando `1`, gera arquivos contextuais; quando `0`, copia os arquivos base sem personalizacao |
+
+Exemplos:
+
+```bash
+# instalacao padrao com symlinks
+bash install.sh /caminho/do/projeto
+
+# instalacao portavel com copia
+LINK_MODE=copy bash install.sh /caminho/do/projeto
+
+# instalacao sem geracao contextual
+GENERATE_CONTEXTUAL_GOVERNANCE=0 bash install.sh /caminho/do/projeto
+```
+
+## Como O Projeto Funciona
+
+### 1. Fonte canonica
+
+Toda logica procedural fica em `.agents/skills/`. Cada skill possui seu proprio `SKILL.md`, referencias carregadas sob demanda e, quando necessario, scripts auxiliares.
+
+### 2. Adaptadores leves por ferramenta
+
+Claude, Codex, Gemini e Copilot recebem apenas a camada minima necessaria para apontar para a skill correta. O objetivo e evitar divergencia entre plataformas.
+
+### 3. Geracao contextual de governanca
+
+Quando `GENERATE_CONTEXTUAL_GOVERNANCE=1`, o script `.agents/skills/analyze-project/scripts/generate-governance.sh` analisa o projeto alvo e gera instrucoes mais precisas com base em:
+
+- tipo de arquitetura detectado;
+- stack principal;
+- frameworks encontrados;
+- ferramentas instaladas.
+
+### 4. Skills por linguagem
+
+As skills base sao sempre instaladas. Skills de implementacao entram conforme a selecao de linguagem:
+
+| Linguagem | Skills instaladas |
+|-----------|-------------------|
+| Go | `go-implementation`, `object-calisthenics-go` |
+| Node.js / TypeScript | `node-implementation` |
+| Python | `python-implementation` |
+
+As skills base instaladas por padrao incluem:
+
+- `agent-governance`
+- `analyze-project`
+- `bugfix`
+- `create-prd`
+- `create-technical-specification`
+- `create-tasks`
+- `execute-task`
+- `refactor`
+- `review`
+
+## Exemplo de Uso
+
+Fluxo tipico para adotar o projeto em outro repositorio:
+
+```bash
+# 1. instalar a governanca
+bash install.sh /caminho/do/projeto
+
+# 2. verificar o que foi gerado no projeto alvo
+ls -la /caminho/do/projeto
+
+# 3. em instalacoes por copia, checar defasagem futuramente
+bash upgrade.sh --check /caminho/do/projeto
+```
+
+## Deteccao Contextual
+
+O gerador contextual usa heuristicas locais para reduzir falsos positivos.
+
+### Tipos de arquitetura identificados
+
+| Tipo | Sinais principais |
+|------|-------------------|
+| Monorepo | `go.work`, `pnpm-workspace.yaml`, `nx.json`, `turbo.json`, `lerna.json`, ou combinacoes como `apps/` + `packages/` |
+| Monolito modular | `modules/`, `domains/` ou `internal/` com multiplos subdiretorios |
+| Microservico | `Dockerfile` combinado com sinais de deploy isolado como `k8s/`, `helm/`, `deployments/`, `skaffold.yaml` ou `kustomization.yaml` |
+| Monolito | fallback quando nao ha sinal forte suficiente |
+
+### Stacks detectadas
+
+Atualmente o gerador identifica, quando presentes:
+
+- Go;
+- Node.js;
+- Python;
+- Java/Kotlin.
+
+Para Go, o gerador tambem tenta inferir frameworks como `Gin`, `Echo`, `Fiber`, `gRPC` e `Connect`.
+
+## Atualizacao de Skills
+
+Quando a instalacao e feita com `LINK_MODE=copy`, o projeto alvo passa a ter uma copia local das skills. Nesse caso, use `upgrade.sh` para verificar defasagem e aplicar atualizacoes.
 
 ### Verificar sem alterar
 
 ```bash
 bash upgrade.sh --check /caminho/do/projeto
-```
-
-Output exemplo:
-
-```text
-Verificando skills em: /caminho/do/projeto
-Fonte: /caminho/do/ai-governance
-
-  OK  agent-governance (1.0.0)
-  OK  go-implementation (1.0.0)
-  DESATUALIZADA  review (fonte: 1.1.0, alvo: 1.0.0)
-  AUSENTE  bugfix (fonte: 1.0.0)
-
-Resumo: 2 atualizadas, 1 desatualizadas, 1 ausentes
-
-Execute sem --check para atualizar: bash upgrade.sh /caminho/do/projeto
 ```
 
 ### Atualizar
@@ -155,407 +244,118 @@ Execute sem --check para atualizar: bash upgrade.sh /caminho/do/projeto
 bash upgrade.sh /caminho/do/projeto
 ```
 
-Se o projeto usar symlinks, o script detecta e pula a copia (a atualizacao e automatica).
+O script compara o campo `version` do frontmatter de cada `SKILL.md` da fonte com a versao instalada no projeto alvo.
 
-**Motivador**: sem versionamento, nao havia como saber se um projeto copiado estava defasado. O campo `version` no frontmatter de cada `SKILL.md` permite comparacao automatica, e o `upgrade.sh` fecha o ciclo de atualizacao.
+Se o projeto estiver usando symlinks, o script detecta isso e evita copias desnecessarias.
 
----
+## Desenvolvimento
 
-## Versionamento de Skills
+### Validacoes disponiveis
 
-Toda skill carrega um campo `version` no frontmatter YAML:
-
-```yaml
----
-name: review
-version: 1.0.0
-description: Revisa um diff quanto a correcao, seguranca...
----
-```
-
-O `upgrade.sh` compara a versao fonte com a versao instalada para cada skill. Skills com `LINK_MODE=symlink` nao precisam de atualizacao manual — refletem automaticamente a versao mais recente.
-
----
-
-## Deteccao de Arquitetura
-
-O `generate-governance.sh` detecta automaticamente o tipo de projeto para gerar governanca personalizada. A deteccao combina multiplos sinais para evitar falsos positivos:
-
-| Tipo | Sinais combinados |
-|------|-------------------|
-| **Monorepo** | `go.work`, `pnpm-workspace.yaml`, `nx.json`, `turbo.json`, `lerna.json`; ou `apps/` + `packages/`; ou `services/` + `packages/` |
-| **Monolito modular** | `modules/` ou `domains/`; ou `internal/` com >= 3 subdiretorios |
-| **Microservico** | `Dockerfile` + pelo menos um sinal de deploy isolado (`k8s/`, `deployments/`, `helm/`, `skaffold.yaml`, `kustomization.yaml`) |
-| **Monolito** | Fallback quando nenhum padrao forte e detectado |
-
-**Motivador**: a deteccao anterior usava sinais isolados. `Dockerfile` sozinho classificava como microservico (mas muitos monolitos tem Dockerfile). `internal/` sozinho classificava como monolito modular (mas e padrao Go sem implicar modularidade). A heuristica refinada reduz classificacoes incorretas.
-
-### Testes de Snapshot
-
-Para garantir que mudancas no `generate-governance.sh` nao introduzam regressoes, ha testes de snapshot com 3 fixtures:
-
-```
-tests/
-  fixtures/
-    go-microservice/       <- Go + Dockerfile + k8s/ + Echo + gRPC
-    go-modular/            <- Go + internal/ com 4 subdirs + Gin + golangci-lint
-    node-monorepo/         <- Node + pnpm-workspace.yaml + apps/ + packages/
-  snapshots/
-    go-microservice.agents.md
-    go-modular.agents.md
-    node-monorepo.agents.md
-  test-generate-governance.sh
-```
-
-Executar os testes:
+Este repositorio possui tres entradas principais de validacao:
 
 ```bash
-# Verificar se o output atual bate com o snapshot salvo
+# valida snapshots do gerador contextual
 bash tests/test-generate-governance.sh
 
-# Atualizar snapshots apos mudanca intencional no gerador
+# valida o fluxo de instalacao end-to-end
+bash tests/test-install.sh
+
+# valida scripts auxiliares
+bash tests/test-scripts.sh
+```
+
+### Atualizacao intencional de snapshots
+
+Se houver mudanca deliberada na saida do gerador contextual:
+
+```bash
 bash tests/test-generate-governance.sh --update
 ```
 
-Output:
+## Estrutura de Testes
 
-```text
-Arquitetura detectada: microservico
-Stack detectada: Go
-Frameworks detectados: Echo,gRPC
-PASS  go-microservice
+O diretorio `tests/fixtures/` contem projetos artificiais que exercitam os cenarios principais de deteccao:
 
-Arquitetura detectada: monolito modular
-Stack detectada: Go
-Frameworks detectados: Gin
-PASS  go-modular
+- `go-microservice`
+- `go-modular`
+- `node-monorepo`
 
-Arquitetura detectada: monorepo
-Stack detectada: Node.js
-Frameworks detectados: nenhum framework dominante identificado
-PASS  node-monorepo
+Os snapshots esperados ficam em `tests/snapshots/` e sao comparados contra o `AGENTS.md` gerado para cada fixture.
 
-Resultado: 3 passed, 0 failed
-```
+## Decisoes Importantes de Design
 
-**Motivador**: o `generate-governance.sh` tem ~430 linhas de logica de deteccao e geracao. Sem testes, uma regressao afeta todos os projetos instalados. Os fixtures cobrem os tres cenarios principais e validam output completo.
+### Portabilidade sem duplicacao
 
----
+O projeto separa claramente:
 
-## Economia de Tokens
+- a fonte de verdade procedural em `.agents/skills/`;
+- as regras canonicas em `AGENTS.md`;
+- os adaptadores especificos de cada ferramenta.
 
-O projeto usa carregamento condicional de referencias para minimizar consumo de contexto. Cada `SKILL.md` lista exatamente quais referencias carregar e em que condicao.
+Isso reduz manutencao duplicada e preserva consistencia entre CLIs.
 
-### Referencias fracionadas
+### Menor carga de contexto
 
-As duas maiores referencias Go foram divididas em arquivos menores com gatilhos mais estreitos:
+As referencias das skills sao carregadas sob demanda. Em vez de enviar grandes blocos fixos para toda tarefa, cada skill define quando ler regras de DDD, seguranca, erros, testes ou padroes mais especificos.
 
-| Antes | Depois | Gatilho |
-|-------|--------|---------|
-| `design-patterns.md` (304L) | `patterns-creational.md` | Factory functions, functional options, builders |
-| | `patterns-structural.md` | Adapters, decorators/middleware, facades |
-| | `patterns-behavioral.md` | Strategy, chain of responsibility, observer, state machine |
-| `implementation-examples.md` (344L) | `examples-domain-flow.md` | Fluxo end-to-end (dominio, service, handler, teste) |
-| | `examples-testing.md` | Fuzz test, table-driven test, construtor com invariantes |
-| | `examples-infrastructure.md` | Graceful shutdown, paginacao cursor-based, versionamento de API |
+### Atualizacao controlada
 
-**Motivador**: os dois arquivos antigos representavam 38% do corpus de referencias Go (~2.600 tokens). Com gatilhos genericos ("quando um esqueleto destravar a implementacao"), eram carregados por falso positivo. A divisao permite carregar apenas o fragmento necessario.
+O campo `version` no frontmatter de cada `SKILL.md` permite comparar fonte e destino ao usar instalacao por copia. Isso fecha o ciclo de manutencao para projetos que nao usam symlink.
 
-**Estimativa de economia**: em uma tarefa de CRUD simples, o agente carrega `patterns-creational.md` (~75L) em vez do `design-patterns.md` inteiro (304L) — reducao de ~75% em tokens para esse tipo de referencia.
+## Limitacoes e Observacoes
 
-### Delegacao de referencias no AGENTS.md
+- `install.sh` nao permite instalar a governanca no proprio repositorio `ai-governance`;
+- o diretorio alvo precisa existir antes da instalacao;
+- a geracao contextual depende dos sinais encontrados localmente no projeto alvo;
+- quando nenhum padrao forte e detectado, o gerador assume um fallback conservador e registra isso no resultado.
 
-Em vez de listar individualmente cada referencia (~30 linhas duplicadas entre `AGENTS.md` e cada `SKILL.md`), o `AGENTS.md` agora delega:
+## Fluxo Recomendado de Uso
 
-```
-Cada skill lista suas proprias referencias em references/ com gatilhos de carregamento
-no respectivo SKILL.md. Consultar o SKILL.md da skill ativa para saber quais
-referencias carregar e em que condicao.
-```
+Para adotar este projeto em outro repositorio:
 
-**Motivador**: elimina manutencao duplicada (adicionar/remover referencia exigia editar 2+ arquivos) e reduz ~30 linhas injetadas no contexto.
+1. execute `bash install.sh /caminho/do/projeto`;
+2. escolha as ferramentas de IA que o projeto realmente usa;
+3. selecione apenas as linguagens relevantes para reduzir ruido;
+4. revise os arquivos gerados no projeto alvo;
+5. se optar por `LINK_MODE=copy`, inclua `upgrade.sh --check` na manutencao periodica.
 
-### Modo review-lite no OC skill
+## Arquivos Principais
 
-Quando o `object-calisthenics-go` opera em modo `review` (sem edicao), a cadeia de carregamento e reduzida:
+| Arquivo | Finalidade |
+|--------|------------|
+| `AGENTS.md` | regra canonica compartilhada entre agentes |
+| `CLAUDE.md` | adaptador base para Claude Code |
+| `GEMINI.md` | adaptador base para Gemini CLI |
+| `install.sh` | instalacao interativa no projeto alvo |
+| `upgrade.sh` | verificacao e atualizacao de skills copiadas |
 
-| Modo | O que carrega | Linhas estimadas |
-|------|---------------|-----------------|
-| `review` | `AGENTS.md` + `rules.md` + `evaluation-guide.md` | ~215 |
-| `execution` | `AGENTS.md` + `agent-governance/SKILL.md` + `go-implementation/SKILL.md` + refs | ~415 |
+## Contribuicao
 
-**Motivador**: carregar `agent-governance` + `go-implementation` inteiros para uma avaliacao sem edicao desperdicava ~600-800 tokens. O modo review-lite carrega apenas o que e necessario para emitir um parecer.
+Contribuicoes devem preservar o contrato entre a base canonica e os adaptadores. Ao propor mudancas:
 
----
+1. altere a skill canonica primeiro, evitando replicar logica nos adaptadores;
+2. mantenha a menor mudanca segura e coerente com o padrao atual;
+3. atualize testes e snapshots quando a saida esperada mudar;
+4. revise o README se o fluxo operacional do projeto mudar.
 
-## Exemplos de Prompts
-
-O fluxo completo de desenvolvimento segue a ordem: **PRD > Especificacao Tecnica > Tarefas > Execucao > Revisao**.
-
-### Criar PRD
-
-**Claude Code**
-
-```
-/create-prd Implementar sistema de notificacoes push para o app mobile
-```
-
-ou via subagente:
-
-```
-@prd-writer Criar PRD para sistema de notificacoes push com suporte a iOS e Android
-```
-
-**GitHub Copilot CLI**
-
-```
-@prd-writer Criar PRD para sistema de notificacoes push com suporte a iOS e Android
-```
-
-**Gemini CLI**
-
-```
-/create-prd Implementar sistema de notificacoes push para o app mobile
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/create-prd/SKILL.md e gere um PRD para sistema de notificacoes push
-```
-
----
-
-### Criar Especificacao Tecnica
-
-**Claude Code**
-
-```
-/create-technical-specification Gerar techspec baseado no PRD docs/prd-notificacoes.md
-```
-
-ou via subagente:
-
-```
-@technical-specification-writer Criar techspec para o PRD docs/prd-notificacoes.md
-```
-
-**GitHub Copilot CLI**
-
-```
-@technical-specification-writer Criar techspec para o PRD docs/prd-notificacoes.md
-```
-
-**Gemini CLI**
-
-```
-/create-technical-specification Gerar techspec baseado no PRD docs/prd-notificacoes.md
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/create-technical-specification/SKILL.md e gere a techspec para docs/prd-notificacoes.md
-```
-
----
-
-### Criar Tarefas
-
-**Claude Code**
-
-```
-/create-tasks Gerar tarefas a partir de docs/prd-notificacoes.md e docs/techspec-notificacoes.md
-```
-
-ou via subagente:
-
-```
-@task-planner Decompor em tarefas o PRD docs/prd-notificacoes.md com techspec docs/techspec-notificacoes.md
-```
-
-**GitHub Copilot CLI**
-
-```
-@task-planner Decompor em tarefas o PRD docs/prd-notificacoes.md com techspec docs/techspec-notificacoes.md
-```
-
-**Gemini CLI**
-
-```
-/create-tasks Gerar tarefas a partir de docs/prd-notificacoes.md e docs/techspec-notificacoes.md
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/create-tasks/SKILL.md e gere tarefas para docs/prd-notificacoes.md e docs/techspec-notificacoes.md
-```
-
----
-
-### Executar Tarefa
-
-**Claude Code**
-
-```
-/execute-task Implementar a tarefa docs/tasks/task-001.md
-```
-
-ou via subagente:
-
-```
-@task-executor Executar docs/tasks/task-001.md
-```
-
-**GitHub Copilot CLI**
-
-```
-@task-executor Executar docs/tasks/task-001.md
-```
-
-**Gemini CLI**
-
-```
-/execute-task Implementar a tarefa docs/tasks/task-001.md
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/execute-task/SKILL.md e implemente docs/tasks/task-001.md
-```
-
----
-
-### Object Calisthenics Go
-
-**Codex CLI**
-
-```
-Leia .agents/skills/object-calisthenics-go/SKILL.md e revise internal/payment/service.go propondo a menor refatoracao segura
-```
-
-```
-Leia .agents/skills/object-calisthenics-go/SKILL.md e refatore pkg/order/order.go para reduzir branching e melhorar encapsulamento sem quebrar contratos
-```
-
----
-
-### Refatorar
-
-**Claude Code**
-
-```
-/refactor Extrair duplicacao do handler de pagamentos em internal/payment/handler.go
-```
-
-ou via subagente:
-
-```
-@refactorer Refatorar internal/payment/handler.go extraindo duplicacao
-```
-
-**GitHub Copilot CLI**
-
-```
-@refactorer Refatorar internal/payment/handler.go extraindo duplicacao
-```
-
-**Gemini CLI**
-
-```
-/refactor Extrair duplicacao do handler de pagamentos em internal/payment/handler.go
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/refactor/SKILL.md e refatore internal/payment/handler.go extraindo duplicacao
-```
-
----
-
-### Revisar
-
-**Claude Code**
-
-```
-/review Revisar as mudancas da branch feat/notificacoes
-```
-
-ou via subagente:
-
-```
-@reviewer Revisar diff da branch feat/notificacoes contra main
-```
-
-**GitHub Copilot CLI**
-
-```
-@reviewer Revisar diff da branch feat/notificacoes contra main
-```
-
-**Gemini CLI**
-
-```
-/review Revisar as mudancas da branch feat/notificacoes
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/review/SKILL.md e revise o diff da branch feat/notificacoes contra main
-```
-
----
-
-### Corrigir Bugs
-
-**Claude Code**
-
-```
-/bugfix Corrigir os bugs listados em tasks/prd-cache-catalogo/bugs.md
-```
-
-**Gemini CLI**
-
-```
-/bugfix Corrigir os bugs listados em tasks/prd-cache-catalogo/bugs.md
-```
-
-**Codex CLI**
-
-```
-Leia .agents/skills/bugfix/SKILL.md e corrija os bugs de tasks/prd-cache-catalogo/bugs.md
-```
-
----
-
-### Fluxo Completo de Desenvolvimento
-
-Exemplo end-to-end usando Claude Code:
+Comandos uteis para validar mudancas:
 
 ```bash
-# 1. Criar o PRD
-/create-prd Implementar cache distribuido com Redis para o servico de catalogo
-
-# 2. Gerar a especificacao tecnica
-/create-technical-specification Gerar techspec baseado no PRD docs/prd-cache-catalogo.md
-
-# 3. Decompor em tarefas
-/create-tasks Gerar tarefas a partir de docs/prd-cache-catalogo.md e docs/techspec-cache-catalogo.md
-
-# 4. Executar cada tarefa
-/execute-task Implementar docs/tasks/task-001.md
-/execute-task Implementar docs/tasks/task-002.md
-
-# 5. Revisar antes do merge
-/review Revisar as mudancas da branch feat/cache-catalogo
+bash tests/test-generate-governance.sh
+bash tests/test-install.sh
+bash tests/test-scripts.sh
 ```
 
-O mesmo fluxo no Gemini CLI segue a mesma sequencia com os comandos `/create-prd`, `/create-technical-specification`, `/create-tasks`, `/execute-task` e `/review`.
+## Roadmap Natural do Repositorio
 
-No Copilot CLI, use os agentes `@prd-writer`, `@technical-specification-writer`, `@task-planner`, `@task-executor` e `@reviewer`.
+Este projeto tende a evoluir em quatro frentes principais:
 
-No Codex CLI, prefixe cada passo com a leitura da SKILL.md correspondente em `.agents/skills/`.
+- novas skills canonicas;
+- refinamento das heuristicas de deteccao contextual;
+- melhoria dos adaptadores por ferramenta;
+- fortalecimento de validacoes e testes de regressao.
+
+## Resumo
+
+`ai-governance` e uma base reutilizavel para instalar, adaptar e manter governanca de agentes de IA em projetos reais. O repositorio combina fonte canonica unica, adaptadores multiplataforma, geracao contextual e estrategia de atualizacao, com foco em consistencia operacional e baixo custo de manutencao.
