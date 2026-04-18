@@ -114,7 +114,7 @@ Durante a execução, o instalador pergunta:
 1. quais ferramentas devem ser instaladas: `claude`, `gemini`, `codex`, `copilot` ou todas;
 2. quais linguagens devem receber skills de implementação: `go`, `node`, `python` ou todas.
 
-Se nenhuma linguagem for informada, o instalador usa Go como padrão.
+Se nenhuma linguagem for informada, o instalador mantém apenas as skills processuais base e não adiciona skills de linguagem.
 
 ### Modo Não Interativo
 
@@ -287,13 +287,35 @@ bash upgrade.sh /caminho/do/projeto
 
 O script compara o campo `version` do frontmatter de cada `SKILL.md` da fonte com a versão instalada no projeto-alvo.
 
+Além da versão do `SKILL.md`, o `upgrade.sh` também detecta divergências de conteúdo por checksum e diferenças no diretório `references/` quando ele existe.
+
+Após atualizar skills copiadas, o script também tenta:
+
+- re-gerar adaptadores de Claude, GitHub e Gemini;
+- re-gerar `.codex/config.toml` com base nas skills instaladas;
+- re-gerar a governança contextual quando o projeto-alvo já possui `AGENTS.md`.
+
 Se o projeto estiver usando symlinks, o script detecta isso e evita cópias desnecessárias.
+
+### Filtrar por linguagem
+
+Quando você quiser revisar ou atualizar apenas skills de linguagem específicas:
+
+```bash
+# verificar apenas skills de Go
+bash upgrade.sh --check --langs go /caminho/do/projeto
+
+# atualizar apenas skills de Node.js
+bash upgrade.sh --langs node /caminho/do/projeto
+```
+
+Valores aceitos em `--langs`: `go`, `node`, `python`.
 
 ## Desenvolvimento
 
 ### Validações disponíveis
 
-Este repositório possui três entradas principais de validação:
+Este repositório possui múltiplos gates de validação para instalação, geração contextual, adaptadores, referências e orçamento de contexto:
 
 ```bash
 # valida snapshots do gerador contextual
@@ -307,6 +329,15 @@ bash tests/test-scripts.sh
 
 # valida upgrade e regeneração de adaptadores
 bash tests/test-upgrade.sh
+
+# valida orçamento de contexto e perfil minimal do Codex
+bash tests/test-context-metrics.sh
+
+# valida paridade de adaptadores gerados
+bash tests/test-adapter-parity.sh
+
+# valida referências declaradas nas skills
+bash tests/test-skill-references.sh
 ```
 
 ### Atualização intencional de snapshots
@@ -324,6 +355,7 @@ O diretório `tests/fixtures/` contém projetos artificiais que exercitam os cen
 - `go-microservice`
 - `go-modular`
 - `node-monorepo`
+- `python-fastapi`
 - `python-monorepo`
 - `polyglot-monorepo`
 
@@ -392,6 +424,7 @@ bash tests/test-generate-governance.sh
 bash tests/test-install.sh
 bash tests/test-context-metrics.sh
 bash tests/test-scripts.sh
+bash tests/test-upgrade.sh
 ```
 
 ## Roadmap Natural do Repositório
