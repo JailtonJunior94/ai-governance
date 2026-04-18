@@ -21,6 +21,9 @@ description: Implementa alteracoes em codigo Node/TypeScript usando governanca b
 4. Ler `references/api.md` quando a tarefa envolver handlers HTTP, middlewares, DTOs, validacao de request ou serializacao.
 5. Ler `references/patterns.md` quando a tarefa envolver dependency injection, repository, factory, strategy ou organizacao de modulos.
 6. Ler `references/observability.md` quando a tarefa envolver logging, tracing, metricas ou health checks.
+7. Ler `references/concurrency.md` quando a tarefa envolver Promises, controle de concorrencia, worker threads, streams ou event loop.
+8. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou health checks.
+9. Ler `references/build.md` quando a tarefa envolver Dockerfile, pipeline de CI, bundling, package manager ou empacotamento.
 
 **Etapa 3: Modelar a alteracao**
 1. Identificar o menor conjunto seguro de mudancas que satisfaz a solicitacao.

@@ -35,6 +35,14 @@ path = ".agents/skills/review"
 enabled = true
 
 [[skills.config]]
+path = ".agents/skills/node-implementation"
+enabled = true
+
+[[skills.config]]
+path = ".agents/skills/python-implementation"
+enabled = true
+
+[[skills.config]]
 path = ".agents/skills/object-calisthenics-go"
 enabled = true
 

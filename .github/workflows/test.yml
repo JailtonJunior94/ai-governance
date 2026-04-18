@@ -23,5 +23,8 @@ jobs:
       - name: Run script tests
         run: bash tests/test-scripts.sh
 
+      - name: Run adapter parity tests
+        run: bash tests/test-adapter-parity.sh
+
       - name: Run install tests
         run: bash tests/test-install.sh

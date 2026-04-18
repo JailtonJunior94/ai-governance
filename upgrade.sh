@@ -111,7 +111,6 @@ for source_skill in "$SOURCE_DIR/.agents/skills"/*/SKILL.md; do
     OUTDATED=$((OUTDATED + 1))
   else
     # Versoes iguais — verificar checksum para detectar edicoes sem bump
-    local source_hash target_hash
     source_hash="$(shasum -a 256 "$source_skill" | awk '{print $1}')"
     target_hash="$(shasum -a 256 "$target_skill" | awk '{print $1}')"
     if [[ "$source_hash" != "$target_hash" ]]; then

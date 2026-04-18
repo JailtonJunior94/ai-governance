@@ -1,0 +1,9 @@
+description = "Implementa alteracoes em codigo Go usando a habilidade canonica go-implementation."
+prompt = """
+Use `.agents/skills/go-implementation/SKILL.md` como fluxo canonico desta tarefa.
+Leia os assets e references sob demanda conforme descrito no SKILL.md.
+Nao invente um processo paralelo neste comando.
+
+Aplicar a habilidade a esta solicitacao:
+{{args}}
+"""
