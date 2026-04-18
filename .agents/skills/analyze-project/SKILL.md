@@ -1,5 +1,6 @@
 ---
 name: analyze-project
+version: 1.0.0
 description: Analisa a arquitetura de um projeto (monolito, monolito modular, monorepo, microservico), detecta stack e ferramentas de IA instaladas, e gera arquivos de governanca (CLAUDE.md, AGENTS.md, GEMINI.md, etc.) personalizados. Use quando precisar configurar ou atualizar a governanca orientada a IA em um projeto existente. Nao use para criar codigo de aplicacao ou alterar logica de negocio.
 ---
 

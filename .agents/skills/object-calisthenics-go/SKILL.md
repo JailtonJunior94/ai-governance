@@ -1,5 +1,6 @@
 ---
 name: object-calisthenics-go
+version: 1.0.0
 description: Aplica heuristicas de object calisthenics em codigo Go por meio de refatoracoes pequenas com preservacao de comportamento, criterios de revisao e passos de validacao adaptados a packages, structs, interfaces, metodos e tratamento de erro. Use quando o codigo Go precisar de melhoria incremental de desenho, menor complexidade, responsabilidades mais estreitas ou orientacao de revisao baseada em regras. Nao use para definicao de escopo de funcionalidade, migracao de framework, reescritas amplas ou mudancas que exijam quebra de API publica sem aprovacao explicita.
 ---
 
@@ -7,12 +8,12 @@ description: Aplica heuristicas de object calisthenics em codigo Go por meio de 
 
 ## Procedimentos
 
-**Etapa 1: Carregar a base obrigatoria**
+**Etapa 1: Carregar a base proporcional ao modo**
 1. Ler `AGENTS.md`.
-2. Ler `.agents/skills/agent-governance/SKILL.md` antes de alterar codigo.
-3. Ler `.agents/skills/go-implementation/SKILL.md` antes de alterar codigo Go.
-4. Executar `bash scripts/list-go-files.sh` para confirmar a superficie Go candidata dentro do contexto atual.
-5. Parar se nao houver arquivos Go relevantes ou se a solicitacao nao estiver limitada o suficiente para uma mudanca segura.
+2. Executar `bash scripts/list-go-files.sh` para confirmar a superficie Go candidata dentro do contexto atual.
+3. Parar se nao houver arquivos Go relevantes ou se a solicitacao nao estiver limitada o suficiente para uma mudanca segura.
+4. Se o modo for `review` (sem edicao): carregar apenas `references/rules.md` e `references/evaluation-guide.md`. Nao carregar `agent-governance/SKILL.md` nem `go-implementation/SKILL.md` — o custo de contexto nao se justifica para avaliacao sem alteracao.
+5. Se o modo for `execution`: carregar `.agents/skills/agent-governance/SKILL.md` e `.agents/skills/go-implementation/SKILL.md` antes de alterar codigo Go.
 
 **Etapa 2: Delimitar o alvo da calibragem**
 1. Identificar o menor conjunto de arquivos, tipos, funcoes e testes que concentra o problema.
@@ -23,10 +24,10 @@ description: Aplica heuristicas de object calisthenics em codigo Go por meio de 
 4. Tratar o modo como `review` por padrao quando a solicitacao nao pedir alteracao explicita.
 
 **Etapa 3: Carregar apenas as referencias necessarias**
-1. Ler `references/rules.md` para interpretar as regras adaptadas para Go.
+1. Em modo `review`, `references/rules.md` e `references/evaluation-guide.md` ja foram carregados na Etapa 1.
 2. Ler `references/go-mapping.md` quando a duvida estiver em como traduzir uma heuristica para packages, structs, interfaces, errors, slices, maps ou funcoes.
-3. Ler `references/evaluation-guide.md` quando for necessario estruturar um parecer, uma lista de achados ou um plano de refatoracao.
-4. Ler `assets/result-template.md` apenas quando for preciso materializar a saida final em formato consistente.
+3. Ler `assets/result-template.md` apenas quando for preciso materializar a saida final em formato consistente.
+4. Em modo `execution`, ler `references/rules.md` e `references/evaluation-guide.md` se ainda nao carregados.
 
 **Etapa 4: Avaliar antes de refatorar**
 1. Confirmar quais regras melhoram clareza e isolamento no contexto real.

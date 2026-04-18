@@ -1,5 +1,6 @@
 ---
 name: create-tasks
+version: 1.0.0
 description: Cria tarefas incrementais de implementação a partir de um PRD e de uma especificação técnica. Use quando documentos de produto e técnicos aprovados precisarem ser decompostos em itens de trabalho ordenados e testáveis. Não use para mudanças diretas de código, descoberta de funcionalidade ou revisão de branch.
 ---
 

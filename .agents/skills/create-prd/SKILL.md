@@ -1,5 +1,6 @@
 ---
 name: create-prd
+version: 1.0.0
 description: Cria documentos de requisitos do produto a partir de solicitações de funcionalidade. Use quando uma funcionalidade precisar de escopo, objetivos, restrições e requisitos funcionais numerados antes do desenho técnico. Não use para planejamento de implementação, mudanças de código ou decisões de arquitetura técnica.
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: go-implementation
+version: 1.0.0
 description: Implementa alteracoes em codigo Go usando governanca base, arquitetura, estilo, testes e padroes recorrentes. Use quando a tarefa exigir adicionar, corrigir, refatorar ou validar codigo Go, incluindo interfaces, generics, concorrencia e validacao da stack. Nao use para tarefas sem codigo Go, documentacao geral ou triagem sem alteracao.
 ---
 
@@ -20,18 +21,22 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 1. Ler `references/interfaces.md` quando a tarefa introduzir, remover ou remodelar interfaces, construtores ou fronteiras de dependencia.
 2. Ler `references/generics.md` quando a tarefa introduzir ou alterar parametros de tipo, constraints ou componentes reutilizaveis com generics.
 3. Ler `references/concurrency.md` quando a tarefa usar goroutines, channels, cancelamento, worker pools ou sincronizacao.
-4. Ler `references/design-patterns.md` quando a tarefa expor um problema recorrente de desenho que nao seja resolvido com tipos concretos, composicao simples ou extracao de metodo.
-5. Ler `references/observability.md` quando a tarefa envolver logging, tracing, metricas ou health checks.
-6. Ler `references/api.md` quando a tarefa envolver handlers HTTP/gRPC, middlewares, DTOs ou serializacao.
-7. Ler `references/persistence.md` quando a tarefa envolver repositories, transactions, migrations, queries ou connection management.
-8. Ler `references/configuration.md` quando a tarefa envolver carregamento de configuracao, variáveis de ambiente ou inicializacao de dependencias.
-9. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou protecao contra falhas transitórias.
-10. Ler `references/messaging.md` quando a tarefa envolver produção ou consumo de mensagens, eventos, filas, tópicos, outbox pattern ou idempotência de consumidores.
-11. Ler `references/security.md` quando a tarefa envolver autenticação, autorização, validação de input, rate limiting, CORS ou tratamento de segredos.
-12. Ler `references/tests.md` quando a tarefa envolver estratégia de testes, integration tests, testcontainers, fixtures ou cobertura.
-13. Ler `references/implementation-examples.md` apenas quando um esqueleto concreto destravar a implementacao ou os testes.
-14. Ler `references/build.md` quando a tarefa envolver Dockerfile, Makefile, pipeline de CI, build flags, imagem de container ou gates de qualidade.
-15. Ler `references/graceful-lifecycle.md` quando a tarefa envolver inicializacao ordenada, shutdown gracioso, handler de sinais, drain de conexoes ou encerramento de goroutines de longa duracao.
+4. Ler `references/patterns-creational.md` quando a tarefa envolver factory functions, functional options, builders ou inicializacao controlada de objetos.
+5. Ler `references/patterns-structural.md` quando a tarefa envolver adapters para integracao externa, decorators/middleware ou facades de orquestracao.
+6. Ler `references/patterns-behavioral.md` quando a tarefa envolver strategy, chain of responsibility, observer/eventos, maquina de estado ou template method.
+7. Ler `references/observability.md` quando a tarefa envolver logging, tracing, metricas ou health checks.
+8. Ler `references/api.md` quando a tarefa envolver handlers HTTP/gRPC, middlewares, DTOs ou serializacao.
+9. Ler `references/persistence.md` quando a tarefa envolver repositories, transactions, migrations, queries ou connection management.
+10. Ler `references/configuration.md` quando a tarefa envolver carregamento de configuracao, variáveis de ambiente ou inicializacao de dependencias.
+11. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou protecao contra falhas transitórias.
+12. Ler `references/messaging.md` quando a tarefa envolver produção ou consumo de mensagens, eventos, filas, tópicos, outbox pattern ou idempotência de consumidores.
+13. Ler `references/security.md` quando a tarefa envolver autenticação, autorização, validação de input, rate limiting, CORS ou tratamento de segredos.
+14. Ler `references/tests.md` quando a tarefa envolver estratégia de testes, integration tests, testcontainers, fixtures ou cobertura.
+15. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end (dominio, service, handler, teste com suite e mockery).
+16. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de fuzz test, table-driven test, construtor com invariantes ou interface no consumidor.
+17. Ler `references/examples-infrastructure.md` quando a tarefa precisar de exemplo de graceful shutdown, paginacao cursor-based ou versionamento de API.
+18. Ler `references/build.md` quando a tarefa envolver Dockerfile, Makefile, pipeline de CI, build flags, imagem de container ou gates de qualidade.
+19. Ler `references/graceful-lifecycle.md` quando a tarefa envolver inicializacao ordenada, shutdown gracioso, handler de sinais, drain de conexoes ou encerramento de goroutines de longa duracao.
 
 **Etapa 3: Modelar a alteracao**
 1. Identificar o menor conjunto seguro de mudancas que satisfaz a solicitacao.

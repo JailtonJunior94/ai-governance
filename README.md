@@ -1,8 +1,8 @@
-# rules
+# ai-governance
 
-Base minima de regras compartilhadas para uso com agentes de IA em diferentes CLIs.
+Base de regras compartilhadas para uso com agentes de IA em diferentes CLIs.
 
-O instalador agora gera `AGENTS.md` e os adaptadores de forma contextual a partir da estrutura real do projeto alvo, em vez de apenas copiar arquivos estaticos.
+O instalador gera `AGENTS.md` e adaptadores de forma contextual a partir da estrutura real do projeto alvo. Cada skill e versionada, carrega referencias sob demanda e pode ser verificada e atualizada em projetos ja instalados.
 
 ## Estrutura
 
@@ -18,6 +18,7 @@ O instalador agora gera `AGENTS.md` e os adaptadores de forma contextual a parti
   agent-governance/                      <- regras transversais (DDD, seguranca, erros, testes)
   go-implementation/                     <- regras e referencias para Go
   object-calisthenics-go/                <- heuristicas de object calisthenics adaptadas para Go
+  analyze-project/                       <- deteccao de arquitetura e geracao de governanca
 
 AGENTS.md                                <- regra canonica compartilhada
 CLAUDE.md                                <- adaptador para Claude Code
@@ -31,6 +32,9 @@ GEMINI.md                                <- adaptador para Gemini CLI
 
 .gemini/commands/                        <- wrappers leves para Gemini CLI
 .github/agents/                          <- wrappers leves para Copilot CLI
+
+tests/                                   <- testes de snapshot para geracao de governanca
+upgrade.sh                               <- verificacao e atualizacao de skills em projetos
 ```
 
 ## Contrato de Portabilidade
@@ -47,79 +51,248 @@ GEMINI.md                                <- adaptador para Gemini CLI
 
 O processo detalhado mora na habilidade canonica em `.agents/skills/`. Comandos, agentes e adaptadores por plataforma apenas roteiam para a habilidade adequada — nunca duplicam o conteudo.
 
-## Instalacao
+---
 
-Uso padrao:
+## Instalacao
 
 ```bash
 bash install.sh /caminho/do/projeto
 ```
 
-Exemplo em projeto novo:
+O instalador pergunta quais ferramentas instalar (Claude, Gemini, Codex, Copilot) e gera governanca contextualizada a partir da deteccao automatica de arquitetura e stack.
+
+### Opcoes
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| `LINK_MODE` | `symlink` | `symlink` mantem fonte unica; `copy` e mais portavel |
+| `GENERATE_CONTEXTUAL_GOVERNANCE` | `1` | `1` detecta e gera; `0` copia sem personalizar |
+
+### Exemplos
+
+Instalacao com symlinks (padrao):
 
 ```bash
-mkdir -p /caminho/projetos/meu-servico
-cd /caminho/projetos/meu-servico
-
-bash /Users/jailtonjunior/Git/rules/install.sh .
+bash install.sh /caminho/do/projeto
 ```
 
-Quando o instalador perguntar pelas ferramentas, voce pode selecionar, por exemplo:
-
-```text
-Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: A
-```
-
-Esse fluxo e util para preparar um repositorio novo antes de iniciar PRD, tech spec, tarefas e execucao.
-
-Exemplo em projeto existente:
-
-```bash
-cd /caminho/projetos/sistema-legado
-
-bash /Users/jailtonjunior/Git/rules/install.sh .
-```
-
-Se quiser instalar apenas para Codex e Claude Code no projeto atual:
-
-```text
-Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: 1 3
-```
-
-Esse fluxo preserva o projeto existente e adiciona apenas os arquivos e adaptadores de governanca para as ferramentas selecionadas.
-
-Opcoes uteis:
-
-- `LINK_MODE=symlink`: modo padrao, mais economico para manter uma unica fonte de verdade.
-- `LINK_MODE=copy`: modo mais portavel para ambientes com restricao a symlink.
-- `GENERATE_CONTEXTUAL_GOVERNANCE=1`: modo padrao; detecta arquitetura, stack e comandos de validacao para gerar `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` e `.github/copilot-instructions.md`.
-- `GENERATE_CONTEXTUAL_GOVERNANCE=0`: fallback para copiar os arquivos canonicos sem personalizacao.
-
-Exemplo portavel:
+Instalacao portavel com copia:
 
 ```bash
 LINK_MODE=copy bash install.sh /caminho/do/projeto
 ```
 
-Exemplo portavel em um projeto existente:
+### Simulacao com --dry-run
+
+Para ver o que seria criado ou sobrescrito sem alterar nenhum arquivo:
 
 ```bash
-cd /caminho/projetos/api-existente
-
-LINK_MODE=copy bash /Users/jailtonjunior/Git/rules/install.sh .
+bash install.sh --dry-run /caminho/do/projeto
 ```
+
+O output lista cada operacao que seria executada, prefixada com `[dry-run]`:
+
+```text
+Selecione as ferramentas que deseja instalar:
+
+  1) claude
+  2) gemini
+  3) codex
+  4) copilot
+  A) Todas
+
+Digite os numeros separados por espaco (exemplo: 1 3) ou A para todas: A
+
+Ferramentas selecionadas: claude gemini codex copilot
+
+-> Instalando Claude Code...
+  [dry-run] ln -sfn /fonte/.agents/skills/create-prd -> /alvo/.claude/skills/create-prd
+  [dry-run] ln -sfn /fonte/.agents/skills/review -> /alvo/.claude/skills/review
+  [dry-run] cp /fonte/.claude/rules/governance.md -> /alvo/.claude/rules/governance.md
+  ...
+-> Instalando Gemini CLI...
+  [dry-run] cp /fonte/.gemini/commands/review.toml -> /alvo/.gemini/commands/review.toml
+  ...
+
+-> [dry-run] Geracao de governanca contextual seria executada aqui.
+
+[dry-run] Nenhum arquivo foi alterado.
+```
+
+**Motivador**: para um script que escreve e sobrescreve arquivos em projetos alvo, a ausencia de simulacao era um risco operacional. `--dry-run` permite auditoria antes de qualquer efeito colateral.
+
+---
+
+## Atualizacao de Skills com upgrade.sh
+
+Quando o `install.sh` e executado com `LINK_MODE=copy`, o projeto alvo fica com um snapshot congelado das skills. Para verificar se estao desatualizadas e atualiza-las:
+
+### Verificar sem alterar
+
+```bash
+bash upgrade.sh --check /caminho/do/projeto
+```
+
+Output exemplo:
+
+```text
+Verificando skills em: /caminho/do/projeto
+Fonte: /caminho/do/ai-governance
+
+  OK  agent-governance (1.0.0)
+  OK  go-implementation (1.0.0)
+  DESATUALIZADA  review (fonte: 1.1.0, alvo: 1.0.0)
+  AUSENTE  bugfix (fonte: 1.0.0)
+
+Resumo: 2 atualizadas, 1 desatualizadas, 1 ausentes
+
+Execute sem --check para atualizar: bash upgrade.sh /caminho/do/projeto
+```
+
+### Atualizar
+
+```bash
+bash upgrade.sh /caminho/do/projeto
+```
+
+Se o projeto usar symlinks, o script detecta e pula a copia (a atualizacao e automatica).
+
+**Motivador**: sem versionamento, nao havia como saber se um projeto copiado estava defasado. O campo `version` no frontmatter de cada `SKILL.md` permite comparacao automatica, e o `upgrade.sh` fecha o ciclo de atualizacao.
+
+---
+
+## Versionamento de Skills
+
+Toda skill carrega um campo `version` no frontmatter YAML:
+
+```yaml
+---
+name: review
+version: 1.0.0
+description: Revisa um diff quanto a correcao, seguranca...
+---
+```
+
+O `upgrade.sh` compara a versao fonte com a versao instalada para cada skill. Skills com `LINK_MODE=symlink` nao precisam de atualizacao manual — refletem automaticamente a versao mais recente.
+
+---
+
+## Deteccao de Arquitetura
+
+O `generate-governance.sh` detecta automaticamente o tipo de projeto para gerar governanca personalizada. A deteccao combina multiplos sinais para evitar falsos positivos:
+
+| Tipo | Sinais combinados |
+|------|-------------------|
+| **Monorepo** | `go.work`, `pnpm-workspace.yaml`, `nx.json`, `turbo.json`, `lerna.json`; ou `apps/` + `packages/`; ou `services/` + `packages/` |
+| **Monolito modular** | `modules/` ou `domains/`; ou `internal/` com >= 3 subdiretorios |
+| **Microservico** | `Dockerfile` + pelo menos um sinal de deploy isolado (`k8s/`, `deployments/`, `helm/`, `skaffold.yaml`, `kustomization.yaml`) |
+| **Monolito** | Fallback quando nenhum padrao forte e detectado |
+
+**Motivador**: a deteccao anterior usava sinais isolados. `Dockerfile` sozinho classificava como microservico (mas muitos monolitos tem Dockerfile). `internal/` sozinho classificava como monolito modular (mas e padrao Go sem implicar modularidade). A heuristica refinada reduz classificacoes incorretas.
+
+### Testes de Snapshot
+
+Para garantir que mudancas no `generate-governance.sh` nao introduzam regressoes, ha testes de snapshot com 3 fixtures:
+
+```
+tests/
+  fixtures/
+    go-microservice/       <- Go + Dockerfile + k8s/ + Echo + gRPC
+    go-modular/            <- Go + internal/ com 4 subdirs + Gin + golangci-lint
+    node-monorepo/         <- Node + pnpm-workspace.yaml + apps/ + packages/
+  snapshots/
+    go-microservice.agents.md
+    go-modular.agents.md
+    node-monorepo.agents.md
+  test-generate-governance.sh
+```
+
+Executar os testes:
+
+```bash
+# Verificar se o output atual bate com o snapshot salvo
+bash tests/test-generate-governance.sh
+
+# Atualizar snapshots apos mudanca intencional no gerador
+bash tests/test-generate-governance.sh --update
+```
+
+Output:
+
+```text
+Arquitetura detectada: microservico
+Stack detectada: Go
+Frameworks detectados: Echo,gRPC
+PASS  go-microservice
+
+Arquitetura detectada: monolito modular
+Stack detectada: Go
+Frameworks detectados: Gin
+PASS  go-modular
+
+Arquitetura detectada: monorepo
+Stack detectada: Node.js
+Frameworks detectados: nenhum framework dominante identificado
+PASS  node-monorepo
+
+Resultado: 3 passed, 0 failed
+```
+
+**Motivador**: o `generate-governance.sh` tem ~430 linhas de logica de deteccao e geracao. Sem testes, uma regressao afeta todos os projetos instalados. Os fixtures cobrem os tres cenarios principais e validam output completo.
+
+---
+
+## Economia de Tokens
+
+O projeto usa carregamento condicional de referencias para minimizar consumo de contexto. Cada `SKILL.md` lista exatamente quais referencias carregar e em que condicao.
+
+### Referencias fracionadas
+
+As duas maiores referencias Go foram divididas em arquivos menores com gatilhos mais estreitos:
+
+| Antes | Depois | Gatilho |
+|-------|--------|---------|
+| `design-patterns.md` (304L) | `patterns-creational.md` | Factory functions, functional options, builders |
+| | `patterns-structural.md` | Adapters, decorators/middleware, facades |
+| | `patterns-behavioral.md` | Strategy, chain of responsibility, observer, state machine |
+| `implementation-examples.md` (344L) | `examples-domain-flow.md` | Fluxo end-to-end (dominio, service, handler, teste) |
+| | `examples-testing.md` | Fuzz test, table-driven test, construtor com invariantes |
+| | `examples-infrastructure.md` | Graceful shutdown, paginacao cursor-based, versionamento de API |
+
+**Motivador**: os dois arquivos antigos representavam 38% do corpus de referencias Go (~2.600 tokens). Com gatilhos genericos ("quando um esqueleto destravar a implementacao"), eram carregados por falso positivo. A divisao permite carregar apenas o fragmento necessario.
+
+**Estimativa de economia**: em uma tarefa de CRUD simples, o agente carrega `patterns-creational.md` (~75L) em vez do `design-patterns.md` inteiro (304L) — reducao de ~75% em tokens para esse tipo de referencia.
+
+### Delegacao de referencias no AGENTS.md
+
+Em vez de listar individualmente cada referencia (~30 linhas duplicadas entre `AGENTS.md` e cada `SKILL.md`), o `AGENTS.md` agora delega:
+
+```
+Cada skill lista suas proprias referencias em references/ com gatilhos de carregamento
+no respectivo SKILL.md. Consultar o SKILL.md da skill ativa para saber quais
+referencias carregar e em que condicao.
+```
+
+**Motivador**: elimina manutencao duplicada (adicionar/remover referencia exigia editar 2+ arquivos) e reduz ~30 linhas injetadas no contexto.
+
+### Modo review-lite no OC skill
+
+Quando o `object-calisthenics-go` opera em modo `review` (sem edicao), a cadeia de carregamento e reduzida:
+
+| Modo | O que carrega | Linhas estimadas |
+|------|---------------|-----------------|
+| `review` | `AGENTS.md` + `rules.md` + `evaluation-guide.md` | ~215 |
+| `execution` | `AGENTS.md` + `agent-governance/SKILL.md` + `go-implementation/SKILL.md` + refs | ~415 |
+
+**Motivador**: carregar `agent-governance` + `go-implementation` inteiros para uma avaliacao sem edicao desperdicava ~600-800 tokens. O modo review-lite carrega apenas o que e necessario para emitir um parecer.
 
 ---
 
 ## Exemplos de Prompts
 
-Abaixo estao exemplos de como invocar cada habilidade nas diferentes plataformas. O fluxo completo de desenvolvimento segue a ordem: **PRD > Especificacao Tecnica > Tarefas > Execucao > Revisao**.
-
----
+O fluxo completo de desenvolvimento segue a ordem: **PRD > Especificacao Tecnica > Tarefas > Execucao > Revisao**.
 
 ### Criar PRD
-
-Gera um documento de requisitos de produto a partir de uma descricao de funcionalidade.
 
 **Claude Code**
 
@@ -155,8 +328,6 @@ Leia .agents/skills/create-prd/SKILL.md e gere um PRD para sistema de notificaco
 
 ### Criar Especificacao Tecnica
 
-Gera especificacao tecnica e ADRs a partir de um PRD aprovado.
-
 **Claude Code**
 
 ```
@@ -190,8 +361,6 @@ Leia .agents/skills/create-technical-specification/SKILL.md e gere a techspec pa
 ---
 
 ### Criar Tarefas
-
-Decompoe PRD e techspec aprovados em tarefas ordenadas de implementacao.
 
 **Claude Code**
 
@@ -227,8 +396,6 @@ Leia .agents/skills/create-tasks/SKILL.md e gere tarefas para docs/prd-notificac
 
 ### Executar Tarefa
 
-Implementa uma tarefa aprovada com codificacao, testes e captura de evidencias.
-
 **Claude Code**
 
 ```
@@ -263,8 +430,6 @@ Leia .agents/skills/execute-task/SKILL.md e implemente docs/tasks/task-001.md
 
 ### Object Calisthenics Go
 
-Aplica heuristicas de object calisthenics de forma incremental e idiomatica em codigo Go, com foco em revisao e refatoracao segura.
-
 **Codex CLI**
 
 ```
@@ -278,8 +443,6 @@ Leia .agents/skills/object-calisthenics-go/SKILL.md e refatore pkg/order/order.g
 ---
 
 ### Refatorar
-
-Planeja ou executa refatoracoes seguras preservando comportamento.
 
 **Claude Code**
 
@@ -315,8 +478,6 @@ Leia .agents/skills/refactor/SKILL.md e refatore internal/payment/handler.go ext
 
 ### Revisar
 
-Revisa um diff quanto a correcao, seguranca, regressoes e testes faltantes.
-
 **Claude Code**
 
 ```
@@ -345,6 +506,28 @@ ou via subagente:
 
 ```
 Leia .agents/skills/review/SKILL.md e revise o diff da branch feat/notificacoes contra main
+```
+
+---
+
+### Corrigir Bugs
+
+**Claude Code**
+
+```
+/bugfix Corrigir os bugs listados em tasks/prd-cache-catalogo/bugs.md
+```
+
+**Gemini CLI**
+
+```
+/bugfix Corrigir os bugs listados em tasks/prd-cache-catalogo/bugs.md
+```
+
+**Codex CLI**
+
+```
+Leia .agents/skills/bugfix/SKILL.md e corrija os bugs de tasks/prd-cache-catalogo/bugs.md
 ```
 
 ---

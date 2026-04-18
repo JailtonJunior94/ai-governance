@@ -6,23 +6,35 @@ Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de 
 
 Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalhar com codigo, configuracao, validacao e evolucao de sistemas.
 
-## Arquitetura: {{TIPO_ARQUITETURA}}
+## Arquitetura: monorepo
 
-{{DESCRICAO_ARQUITETURA}}
+O projeto aparenta ser um monorepo, com multiplos componentes ou workspaces sob a mesma raiz. A governanca deve preservar fronteiras entre pacotes e validar apenas os workspaces afetados.
+
+Stack detectada: Node.js.
+Frameworks detectados: nenhum framework dominante identificado.
 
 ## Estrutura de Pastas
 
 ```
-{{ARVORE_DIRETORIOS}}
+.
+package.json
+packages
+packages/shared
+packages/shared/package.json
+apps
+apps/web
+apps/web/package.json
+pnpm-workspace.yaml
 ```
 
 ## Padrao Arquitetural
 
-{{PADRAO_ARQUITETURAL}}
+Padrao arquitetural nao inferido com alta confianca; assumir composicao simples e dependencias explicitas.
 
 ### Fluxo de Dependencias
 
-{{FLUXO_DEPENDENCIAS}}
+- Dependencias devem apontar de bordas externas para o nucleo do negocio.
+- Detalhes de framework, IO e persistencia nao devem vazar para o centro do sistema.
 
 ## Modo de trabalho
 
@@ -44,7 +56,11 @@ Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalha
 6. Considere risco de regressao como restricao principal.
 7. Evite overengineering disfarcado de arquitetura futura.
 
-{{REGRAS_ARQUITETURA}}
+## Regras por Arquitetura
+
+1. Limitar mudancas ao workspace, pacote ou servico afetado.
+2. Nao criar dependencias internas cruzadas sem contrato explicito.
+3. Validar primeiro apenas os workspaces impactados antes de ampliar o escopo.
 
 ## Regras por Linguagem
 
@@ -52,7 +68,7 @@ Para tarefas que alteram codigo, carregar a skill:
 
 - `.agents/skills/agent-governance/SKILL.md`
 
-{{REGRAS_LINGUAGEM}}
+
 
 Para tarefas de correcao de bugs com remediacao e teste de regressao, carregar tambem:
 
@@ -66,7 +82,10 @@ Cada skill lista suas proprias referencias em `references/` com gatilhos de carr
 
 Antes de concluir uma alteracao:
 
-{{COMANDOS_VALIDACAO}}
+1. Rodar formatter dos arquivos alterados quando o projeto oferecer esse passo.
+2. Rodar `npm test` ou o comando equivalente do contexto.
+3. Rodar `npm run lint` quando esse passo existir.
+4. Informar falhas com o comando exato e um diagnostico curto.
 
 ## Restricoes
 
@@ -75,4 +94,4 @@ Antes de concluir uma alteracao:
 3. Nao alterar comportamento publico sem deixar isso explicito.
 4. Nao usar exemplos como copia cega; adaptar ao contexto real.
 
-{{RESTRICOES_ARQUITETURA}}
+5. Nao alterar contratos entre workspaces sem deixar o impacto explicito.

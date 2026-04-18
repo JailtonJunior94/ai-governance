@@ -31,21 +31,44 @@ has_any_files() {
 }
 
 detect_architecture_type() {
-  if file_exists "go.work" || has_any_files "services" || has_any_files "apps" || has_any_files "packages"; then
+  # Monorepo: sinais fortes de multiplos projetos independentes
+  if file_exists "go.work" || file_exists "pnpm-workspace.yaml" || file_exists "nx.json" || file_exists "turbo.json" || file_exists "lerna.json"; then
+    printf 'monorepo'
+    return
+  fi
+  if has_any_files "services" && has_any_files "packages"; then
+    printf 'monorepo'
+    return
+  fi
+  if has_any_files "apps" && has_any_files "packages"; then
     printf 'monorepo'
     return
   fi
 
-  if has_any_files "internal" || has_any_files "modules" || has_any_files "domains"; then
+  # Monolito modular: subdivisao interna por dominio/modulo com mais de um subdiretorio
+  if has_any_files "modules" || has_any_files "domains"; then
     printf 'monolito modular'
     return
   fi
-
-  if file_exists "Dockerfile" || file_exists "docker-compose.yml" || file_exists "docker-compose.yaml" || has_any_files "deployments" || has_any_files "k8s"; then
-    printf 'microservico'
-    return
+  if [[ -d "$PROJECT_DIR/internal" ]]; then
+    local internal_subdirs
+    internal_subdirs="$(find "$PROJECT_DIR/internal" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
+    if [[ "$internal_subdirs" -ge 3 ]]; then
+      printf 'monolito modular'
+      return
+    fi
   fi
 
+  # Microservico: Dockerfile + sinais de deploy isolado (manifests k8s, deployments)
+  # Dockerfile sozinho nao e suficiente — exige sinal adicional de isolamento
+  if file_exists "Dockerfile"; then
+    if has_any_files "deployments" || has_any_files "k8s" || has_any_files "helm" || file_exists "skaffold.yaml" || file_exists "kustomization.yaml"; then
+      printf 'microservico'
+      return
+    fi
+  fi
+
+  # Fallback: monolito
   echo "AVISO: arquitetura nao detectada com alta confianca, assumindo monolito." >&2
   printf 'monolito'
 }
@@ -257,35 +280,9 @@ build_language_rules() {
 }
 
 build_language_references() {
-  local output=""
-
-  if file_exists "go.mod"; then
-    output+="## Referencias da Skill Go\n\nLer conforme necessidade:\n\n"
-    output+="- \`.agents/skills/go-implementation/references/governance.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/architecture.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/go-standards.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/interfaces.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/generics.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/concurrency.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/design-patterns.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/observability.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/api.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/persistence.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/configuration.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/resilience.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/messaging.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/security.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/tests.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/implementation-examples.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/build.md\`\n"
-    output+="- \`.agents/skills/go-implementation/references/graceful-lifecycle.md\`\n"
-    output+="\n## Referencias da Skill Object Calisthenics Go\n\nLer conforme necessidade:\n\n"
-    output+="- \`.agents/skills/object-calisthenics-go/references/rules.md\`\n"
-    output+="- \`.agents/skills/object-calisthenics-go/references/go-mapping.md\`\n"
-    output+="- \`.agents/skills/object-calisthenics-go/references/evaluation-guide.md\`\n"
-  fi
-
-  printf '%b' "$output"
+  # Referencias nao sao mais listadas individualmente no AGENTS.md.
+  # Cada skill lista suas proprias referencias em SKILL.md.
+  printf ''
 }
 
 build_validation_commands() {
@@ -341,16 +338,16 @@ EOF
 }
 
 build_stack_section() {
-  local lines=()
-
   if file_exists "go.mod"; then
-    lines+=("## Stack")
-    lines+=("")
-    lines+=("- Projeto com contexto Go detectado: carregar \`.agents/skills/go-implementation/SKILL.md\` ao alterar codigo Go.")
-    lines+=("- Validar a versao declarada em \`go.mod\` antes de introduzir APIs da linguagem ou novas dependencias.")
+    printf '%s\n' \
+      "## Stack" \
+      "" \
+      "- Projeto com contexto Go detectado: carregar \`.agents/skills/go-implementation/SKILL.md\` ao alterar codigo Go." \
+      "- Validar a versao declarada em \`go.mod\` antes de introduzir APIs da linguagem ou novas dependencias."
+    return
   fi
 
-  printf '%s\n' "${lines[@]}"
+  printf ''
 }
 
 render_template() {

@@ -50,43 +50,9 @@ Essa skill define:
 - carregamento sob demanda de regras de DDD, erros, segurança e testes
 - critérios mínimos de preservação arquitetural, risco e validação proporcional
 
-## Referências da Skill
+## Referências
 
-Ler conforme necessidade:
-
-- `.agents/skills/agent-governance/references/ddd.md`
-- `.agents/skills/agent-governance/references/error-handling.md`
-- `.agents/skills/agent-governance/references/security.md`
-- `.agents/skills/agent-governance/references/tests.md`
-
-## Referências da Skill Go
-
-Ler conforme necessidade:
-
-- `.agents/skills/go-implementation/references/governance.md`
-- `.agents/skills/go-implementation/references/architecture.md`
-- `.agents/skills/go-implementation/references/go-standards.md`
-- `.agents/skills/go-implementation/references/interfaces.md`
-- `.agents/skills/go-implementation/references/generics.md`
-- `.agents/skills/go-implementation/references/concurrency.md`
-- `.agents/skills/go-implementation/references/design-patterns.md`
-- `.agents/skills/go-implementation/references/observability.md`
-- `.agents/skills/go-implementation/references/api.md`
-- `.agents/skills/go-implementation/references/persistence.md`
-- `.agents/skills/go-implementation/references/configuration.md`
-- `.agents/skills/go-implementation/references/resilience.md`
-- `.agents/skills/go-implementation/references/messaging.md`
-- `.agents/skills/go-implementation/references/implementation-examples.md`
-- `.agents/skills/go-implementation/references/build.md`
-- `.agents/skills/go-implementation/references/graceful-lifecycle.md`
-
-## Referências da Skill Object Calisthenics Go
-
-Ler conforme necessidade:
-
-- `.agents/skills/object-calisthenics-go/references/rules.md`
-- `.agents/skills/object-calisthenics-go/references/go-mapping.md`
-- `.agents/skills/object-calisthenics-go/references/evaluation-guide.md`
+Cada skill lista suas próprias referências em `references/` com gatilhos de carregamento no respectivo `SKILL.md`. Não duplicar a listagem aqui — consultar o SKILL.md da skill ativa para saber quais referências carregar e em que condição.
 
 ## Validação
 

@@ -6,23 +6,35 @@ Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de 
 
 Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalhar com codigo, configuracao, validacao e evolucao de sistemas.
 
-## Arquitetura: {{TIPO_ARQUITETURA}}
+## Arquitetura: monolito modular
 
-{{DESCRICAO_ARQUITETURA}}
+O projeto aparenta ser um monolito modular, com separacao relevante por modulos, dominios ou componentes internos. A governanca deve proteger essas fronteiras e evitar dependencias circulares.
+
+Stack detectada: Go.
+Frameworks detectados: Gin.
 
 ## Estrutura de Pastas
 
 ```
-{{ARVORE_DIRETORIOS}}
+.
+go.mod
+internal
+internal/order
+internal/notification
+internal/payment
+internal/customer
+.golangci.yml
 ```
 
 ## Padrao Arquitetural
 
-{{PADRAO_ARQUITETURAL}}
+Predominio de packages internos coesos, com estrutura orientada por dominio ou componente.
 
 ### Fluxo de Dependencias
 
-{{FLUXO_DEPENDENCIAS}}
+- Transporte e adapters devem depender de casos de uso ou servicos explicitos, nao do contrario.
+- Dominio nao deve conhecer detalhes de HTTP, banco, filas, serializacao ou drivers.
+- Infraestrutura pode implementar contratos consumidos pela aplicacao, preservando dependencia para dentro.
 
 ## Modo de trabalho
 
@@ -44,7 +56,11 @@ Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalha
 6. Considere risco de regressao como restricao principal.
 7. Evite overengineering disfarcado de arquitetura futura.
 
-{{REGRAS_ARQUITETURA}}
+## Regras por Arquitetura
+
+1. Respeitar fronteiras entre modulos e bounded contexts.
+2. Evitar dependencia circular entre packages internos.
+3. Nao extrair shared helpers sem demanda comprovada de mais de um modulo.
 
 ## Regras por Linguagem
 
@@ -52,7 +68,13 @@ Para tarefas que alteram codigo, carregar a skill:
 
 - `.agents/skills/agent-governance/SKILL.md`
 
-{{REGRAS_LINGUAGEM}}
+Para tarefas que alteram codigo Go, carregar tambem:
+
+- `.agents/skills/go-implementation/SKILL.md`
+
+Para tarefas de revisao ou refatoracao incremental de design em Go guiadas por heuristicas de object calisthenics, carregar tambem:
+
+- `.agents/skills/object-calisthenics-go/SKILL.md`
 
 Para tarefas de correcao de bugs com remediacao e teste de regressao, carregar tambem:
 
@@ -66,7 +88,11 @@ Cada skill lista suas proprias referencias em `references/` com gatilhos de carr
 
 Antes de concluir uma alteracao:
 
-{{COMANDOS_VALIDACAO}}
+1. Rodar `gofmt` nos arquivos Go alterados.
+2. Rodar `golangci-lint run` quando o contexto local oferecer esse passo.
+3. Rodar primeiro testes direcionados e depois `go test ./...` quando o custo for proporcional.
+4. Rodar `go vet ./...` quando esse passo fizer parte do gate do projeto.
+5. Informar falhas com o comando exato e um diagnostico curto.
 
 ## Restricoes
 
@@ -75,4 +101,4 @@ Antes de concluir uma alteracao:
 3. Nao alterar comportamento publico sem deixar isso explicito.
 4. Nao usar exemplos como copia cega; adaptar ao contexto real.
 
-{{RESTRICOES_ARQUITETURA}}
+

@@ -6,23 +6,38 @@ Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de 
 
 Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalhar com codigo, configuracao, validacao e evolucao de sistemas.
 
-## Arquitetura: {{TIPO_ARQUITETURA}}
+## Arquitetura: microservico
 
-{{DESCRICAO_ARQUITETURA}}
+O projeto aparenta ser um microservico independente, com foco em contrato de API, inicializacao, dependencias externas e seguranca operacional. A governanca deve preservar o escopo do servico e o seu deploy independente.
+
+Stack detectada: Go.
+Frameworks detectados: Echo,gRPC.
 
 ## Estrutura de Pastas
 
 ```
-{{ARVORE_DIRETORIOS}}
+.
+cmd
+cmd/server
+cmd/server/main.go
+go.mod
+Dockerfile
+k8s
+k8s/deployment.yaml
+internal
+internal/order
+internal/order/service.go
 ```
 
 ## Padrao Arquitetural
 
-{{PADRAO_ARQUITETURAL}}
+Predominio de packages internos coesos, com estrutura orientada por dominio ou componente.
 
 ### Fluxo de Dependencias
 
-{{FLUXO_DEPENDENCIAS}}
+- Transporte e adapters devem depender de casos de uso ou servicos explicitos, nao do contrario.
+- Dominio nao deve conhecer detalhes de HTTP, banco, filas, serializacao ou drivers.
+- Infraestrutura pode implementar contratos consumidos pela aplicacao, preservando dependencia para dentro.
 
 ## Modo de trabalho
 
@@ -44,7 +59,11 @@ Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalha
 6. Considere risco de regressao como restricao principal.
 7. Evite overengineering disfarcado de arquitetura futura.
 
-{{REGRAS_ARQUITETURA}}
+## Regras por Arquitetura
+
+1. Preservar contratos publicados e compatibilidade de integracao.
+2. Manter inicializacao, observabilidade e shutdown como parte do comportamento do servico.
+3. Nao acoplar o servico a convencoes de outros servicos sem contrato explicito.
 
 ## Regras por Linguagem
 
@@ -52,7 +71,13 @@ Para tarefas que alteram codigo, carregar a skill:
 
 - `.agents/skills/agent-governance/SKILL.md`
 
-{{REGRAS_LINGUAGEM}}
+Para tarefas que alteram codigo Go, carregar tambem:
+
+- `.agents/skills/go-implementation/SKILL.md`
+
+Para tarefas de revisao ou refatoracao incremental de design em Go guiadas por heuristicas de object calisthenics, carregar tambem:
+
+- `.agents/skills/object-calisthenics-go/SKILL.md`
 
 Para tarefas de correcao de bugs com remediacao e teste de regressao, carregar tambem:
 
@@ -66,7 +91,11 @@ Cada skill lista suas proprias referencias em `references/` com gatilhos de carr
 
 Antes de concluir uma alteracao:
 
-{{COMANDOS_VALIDACAO}}
+1. Rodar `gofmt` nos arquivos Go alterados.
+2. Rodar primeiro testes direcionados e depois `go test ./...` quando o custo for proporcional.
+3. Rodar `go vet ./...` quando esse passo fizer parte do gate do projeto.
+4. Rodar lint se o contexto oferecer esse passo.
+5. Informar falhas com o comando exato e um diagnostico curto.
 
 ## Restricoes
 
@@ -75,4 +104,4 @@ Antes de concluir uma alteracao:
 3. Nao alterar comportamento publico sem deixar isso explicito.
 4. Nao usar exemplos como copia cega; adaptar ao contexto real.
 
-{{RESTRICOES_ARQUITETURA}}
+5. Nao alterar contratos externos, readiness, observabilidade ou semantica operacional sem explicitar a mudanca.
