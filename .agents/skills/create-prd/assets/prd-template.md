@@ -1,5 +1,7 @@
 # Documento de Requisitos do Produto (PRD)
 
+<!-- spec-version: 1 -->
+
 ## Visão Geral
 
 [Forneça uma visão geral de alto nível do produto ou funcionalidade. Explique qual problema resolve, para quem é e por que é valioso.]

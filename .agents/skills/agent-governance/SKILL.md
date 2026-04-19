@@ -21,6 +21,7 @@ description: Orquestra regras de governanca, DDD, tratamento de erros, seguranca
 5. Ler `references/shared-lifecycle.md` quando a tarefa envolver inicializacao, shutdown, signal handling ou drain de conexoes — principios universais aplicaveis a qualquer linguagem.
 6. Ler `references/shared-testing.md` quando a tarefa envolver estrategia de testes cross-linguagem — principios de unit/integration test aplicaveis a qualquer stack.
 7. Ler `references/shared-architecture.md` quando a tarefa envolver decisoes arquiteturais cross-linguagem — DI, organizacao de modulos, sinais de excesso.
+8. Ler `references/shared-patterns.md` quando a tarefa envolver patterns recorrentes cross-linguagem — Repository, Factory, DI, Value Objects, Error Handling.
 
 **Etapa 3: Executar com controle**
 1. Preservar comportamento publico existente, salvo quando a mudanca explicitar a alteracao.

@@ -40,7 +40,8 @@ description: Cria documentos de requisitos do produto a partir de solicitações
 **Etapa 5: Persistir o artefato**
 1. Criar `tasks/prd-<slug-da-funcionalidade>/` quando não existir.
 2. Salvar o documento final como `tasks/prd-<slug-da-funcionalidade>/prd.md`.
-3. Evitar criar cópias alternativas em pastas ad hoc.
+3. Incluir `<!-- spec-version: 1 -->` no topo do PRD na primeira versao. Incrementar o numero ao editar um PRD existente.
+4. Evitar criar cópias alternativas em pastas ad hoc.
 
 **Etapa 6: Encerrar com status explícito**
 1. Informar o caminho final.

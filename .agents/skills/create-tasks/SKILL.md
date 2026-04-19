@@ -40,6 +40,7 @@ description: Cria tarefas incrementais de implementação a partir de um PRD e d
 1. Usar apenas estados canônicos: `pending`, `in_progress`, `needs_input`, `blocked`, `failed`, `done`.
 2. Marcar dependências críticas explicitamente.
 3. Identificar paralelismo seguro apenas quando ele não esconder risco de integração.
+4. Gerar bloco mermaid `graph TD` em `tasks.md` representando o grafo de dependencias entre tarefas. Formato: `T1["1.0 — Titulo"] --> T2["2.0 — Titulo"]` para cada dependencia.
 
 **Etapa 6: Reportar o resultado**
 1. Listar os arquivos gerados.

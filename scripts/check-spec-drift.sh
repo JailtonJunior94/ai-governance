@@ -111,10 +111,41 @@ check_spec_hash() {
   fi
 }
 
+# ---------------------------------------------------------------------------
+# Estrategia 3: spec-version incremental
+# Se o PRD contiver <!-- spec-version: N --> e tasks.md contiver
+# <!-- prd-version: M -->, compara N > M para detectar evolucao nao refletida.
+# ---------------------------------------------------------------------------
+check_spec_version() {
+  local spec_file="$1"
+
+  [[ -f "$spec_file" ]] || return 0
+
+  local spec_ver
+  spec_ver="$(grep -Eo '<!-- spec-version: [0-9]+ -->' "$spec_file" 2>/dev/null | grep -Eo '[0-9]+' | head -1 || true)"
+
+  [[ -n "$spec_ver" ]] || return 0
+
+  local tasks_ver
+  tasks_ver="$(grep -Eo '<!-- prd-version: [0-9]+ -->' "$tasks_file" 2>/dev/null | grep -Eo '[0-9]+' | head -1 || true)"
+
+  if [[ -z "$tasks_ver" ]]; then
+    echo "AVISO: PRD tem spec-version ($spec_ver) mas tasks.md nao tem prd-version. Considere adicionar <!-- prd-version: $spec_ver -->." >&2
+    return 0
+  fi
+
+  if [[ "$spec_ver" -gt "$tasks_ver" ]]; then
+    echo "DRIFT: spec-version do PRD ($spec_ver) maior que prd-version em tasks.md ($tasks_ver)" >&2
+    echo "  Recomendacao: atualizar tasks.md com <!-- prd-version: $spec_ver --> e revisar tarefas." >&2
+    drift=1
+  fi
+}
+
 check_rf_coverage "$prd_file"      "prd.md"
 check_rf_coverage "$techspec_file" "techspec.md"
 check_spec_hash   "$prd_file"      "prd.md"
 check_spec_hash   "$techspec_file" "techspec.md"
+check_spec_version "$prd_file"
 
 if [[ "$drift" -eq 0 ]]; then
   echo "OK: sem drift detectado entre spec e tasks.md"

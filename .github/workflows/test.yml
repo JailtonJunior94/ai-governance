@@ -31,6 +31,9 @@ jobs:
           - governance-lint
           - gemini-e2e
           - spec-drift
+          - evidence-validators
+          - mutation
+          - skill-integration
     steps:
       - uses: actions/checkout@v4
 

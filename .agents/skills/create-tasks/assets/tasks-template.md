@@ -20,6 +20,15 @@
 ## Riscos de Integração
 - [Pontos de integração que podem causar retrabalho]
 
+## Grafo de Dependencias
+
+```mermaid
+graph TD
+    T1["1.0 — Titulo da tarefa"]
+    T2["2.0 — Titulo da tarefa"] --> T1
+    T3["3.0 — Titulo da tarefa"]
+```
+
 ## Legenda de Status
 - `pending`: aguardando execução
 - `in_progress`: em execução
