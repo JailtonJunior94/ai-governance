@@ -1,0 +1,188 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    name: Create release commit and tag
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Fetch tags and main explicitly
+        run: |
+          set -euo pipefail
+          git fetch --force --tags origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: Configure Git author
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Compute release decision
+        id: semver
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          output="$(bash scripts/semver-next.sh)"
+          printf '%s\n' "$output"
+
+          while IFS='=' read -r key value; do
+            [[ -n "$key" ]] || continue
+            printf '%s=%s\n' "$key" "$value" >> "$GITHUB_OUTPUT"
+          done <<< "$output"
+
+      - name: Evaluate release guard rails
+        id: release_guard
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          action="${{ steps.semver.outputs.action }}"
+          release_required="${{ steps.semver.outputs.release_required }}"
+          bootstrap_required="${{ steps.semver.outputs.bootstrap_required }}"
+          target_version="${{ steps.semver.outputs.target_version }}"
+          target_tag="v${target_version}"
+          release_commit_message="chore(release): ${target_tag} [skip ci]"
+          release_date="$(date -u +%F)"
+
+          echo "target_tag=$target_tag" >> "$GITHUB_OUTPUT"
+          echo "release_commit_message=$release_commit_message" >> "$GITHUB_OUTPUT"
+          echo "release_date=$release_date" >> "$GITHUB_OUTPUT"
+
+          if git rev-parse -q --verify "refs/tags/$target_tag" > /dev/null; then
+            echo "mode=noop" >> "$GITHUB_OUTPUT"
+            echo "reason=tag $target_tag ja existe; rerun deve ser no-op" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git log origin/main --format=%s | grep -Fx "$release_commit_message" > /dev/null; then
+            echo "ERRO: commit de release $release_commit_message existe em origin/main sem o tag $target_tag" >&2
+            exit 1
+          fi
+
+          if [[ "$action" == "bootstrap" ]]; then
+            version_value="$(tr -d '[:space:]' < VERSION)"
+            if [[ "$bootstrap_required" != "true" ]]; then
+              echo "ERRO: action bootstrap sem bootstrap_required=true" >&2
+              exit 1
+            fi
+            if [[ "$version_value" != "1.0.0" ]]; then
+              echo "ERRO: bootstrap real so pode ocorrer com VERSION=1.0.0; valor atual: $version_value" >&2
+              exit 1
+            fi
+            if ! grep -Fx '## [1.0.0] - 2025-05-01' CHANGELOG.md > /dev/null; then
+              echo "ERRO: bootstrap real exige secao canonica ## [1.0.0] - 2025-05-01 em CHANGELOG.md" >&2
+              exit 1
+            fi
+
+            echo "mode=bootstrap" >> "$GITHUB_OUTPUT"
+            echo "reason=bootstrap inicial autorizado" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$release_required" != "true" ]]; then
+            echo "mode=noop" >> "$GITHUB_OUTPUT"
+            echo "reason=decisao atual nao exige release" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "mode=release" >> "$GITHUB_OUTPUT"
+          echo "reason=release requerida para $target_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize release artifacts
+        if: ${{ steps.release_guard.outputs.mode == 'release' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_version="${{ steps.semver.outputs.target_version }}"
+          release_date="${{ steps.release_guard.outputs.release_date }}"
+
+          if grep -Eq "^## \\[$target_version\\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
+            echo "ERRO: CHANGELOG.md ja contem a release $target_version sem o tag correspondente" >&2
+            exit 1
+          fi
+
+          current_version="$(tr -d '[:space:]' < VERSION)"
+          if [[ "$current_version" == "$target_version" ]]; then
+            echo "ERRO: VERSION ja esta em $target_version sem o tag correspondente" >&2
+            exit 1
+          fi
+
+          bash scripts/update-version.sh --version "$target_version"
+          bash scripts/update-changelog-release.sh --version "$target_version" --date "$release_date"
+
+          if git diff --quiet --exit-code -- VERSION CHANGELOG.md; then
+            echo "ERRO: release requerida, mas VERSION e CHANGELOG.md nao mudaram" >&2
+            exit 1
+          fi
+
+      - name: Create release commit
+        if: ${{ steps.release_guard.outputs.mode == 'release' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git add VERSION CHANGELOG.md
+          git commit -m "${{ steps.release_guard.outputs.release_commit_message }}"
+
+      - name: Create annotated tag
+        if: ${{ steps.release_guard.outputs.mode != 'noop' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -a "${{ steps.release_guard.outputs.target_tag }}" -m "${{ steps.release_guard.outputs.target_tag }}"
+
+      - name: Push release commit and tag
+        if: ${{ steps.release_guard.outputs.mode == 'release' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push --atomic origin HEAD:main "refs/tags/${{ steps.release_guard.outputs.target_tag }}"
+
+      - name: Push bootstrap tag
+        if: ${{ steps.release_guard.outputs.mode == 'bootstrap' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin "refs/tags/${{ steps.release_guard.outputs.target_tag }}"
+
+      - name: Publish workflow summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Release Workflow"
+            echo ""
+            echo "- action: \`${{ steps.semver.outputs.action }}\`"
+            echo "- mode: \`${{ steps.release_guard.outputs.mode }}\`"
+            echo "- reason: \`${{ steps.release_guard.outputs.reason }}\`"
+            echo "- target_tag: \`${{ steps.release_guard.outputs.target_tag }}\`"
+            echo "- target_version: \`${{ steps.semver.outputs.target_version }}\`"
+            echo "- bump: \`${{ steps.semver.outputs.bump }}\`"
+            echo "- release_required: \`${{ steps.semver.outputs.release_required }}\`"
+            echo "- bootstrap_required: \`${{ steps.semver.outputs.bootstrap_required }}\`"
+            echo "- commit_range: \`${{ steps.semver.outputs.commit_range }}\`"
+            echo "- commit_count: \`${{ steps.semver.outputs.commit_count }}\`"
+            echo "- eligible_commit_count: \`${{ steps.semver.outputs.eligible_commit_count }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

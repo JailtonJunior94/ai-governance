@@ -23,6 +23,44 @@ fail() {
   FAILED=$((FAILED + 1))
 }
 
+set_repo_version() {
+  local repo_dir="$1"
+  local version="$2"
+  VERSION="$version" python3 - "$repo_dir/.agents/skills/agent-governance/SKILL.md" "$repo_dir/VERSION" <<'PY'
+from pathlib import Path
+import os
+import sys
+
+skill_path = Path(sys.argv[1])
+version_path = Path(sys.argv[2])
+version = os.environ["VERSION"]
+
+skill_content = skill_path.read_text()
+skill_content = __import__("re").sub(r"^version:\s+.*$", f"version: {version}", skill_content, count=1, flags=__import__("re").MULTILINE)
+skill_path.write_text(skill_content)
+version_path.write_text(f"{version}\n")
+PY
+}
+
+create_ref_fixture_repo() {
+  local repo_dir="$1"
+
+  mkdir -p "$repo_dir"
+  tar --exclude='.git' -cf - -C "$ROOT_DIR" . | tar -xf - -C "$repo_dir"
+  git -C "$repo_dir" init -q
+  git -C "$repo_dir" config user.name "Test Runner"
+  git -C "$repo_dir" config user.email "test@example.com"
+
+  set_repo_version "$repo_dir" "1.0.1"
+  git -C "$repo_dir" add .
+  git -C "$repo_dir" -c commit.gpgsign=false commit -q -m "baseline"
+  git -C "$repo_dir" tag "v1.0.1-test"
+
+  set_repo_version "$repo_dir" "1.0.2"
+  git -C "$repo_dir" add .agents/skills/agent-governance/SKILL.md VERSION
+  git -C "$repo_dir" -c commit.gpgsign=false commit -q -m "head"
+}
+
 # ============================================================
 # Caso 1: dry-run nao cria arquivos
 # ============================================================
@@ -208,7 +246,38 @@ else
 fi
 
 # ============================================================
-# Caso 7: Codex dinamico sem geracao contextual
+# Caso 7: ref explicita instala snapshot do tag, nao do HEAD atual
+# ============================================================
+REF_REPO="$TMP_DIR/ref-install-repo"
+create_ref_fixture_repo "$REF_REPO"
+
+REF_TARGET="$TMP_DIR/ref-target"
+mkdir -p "$REF_TARGET"
+echo "module ref-target" > "$REF_TARGET/go.mod"
+
+ref_output="$(GENERATE_CONTEXTUAL_GOVERNANCE=0 AI_GOVERNANCE_REF=v1.0.1-test bash "$REF_REPO/install.sh" --tools codex --langs go "$REF_TARGET" 2>&1)"
+
+installed_ref_version="$(awk '/^---$/{n++; next} n==1 && /^version:/{print $2; exit}' "$REF_TARGET/.agents/skills/agent-governance/SKILL.md")"
+if [[ "$installed_ref_version" == "1.0.1" ]]; then
+  pass "explicit-ref-install: instala conteudo do tag solicitado"
+else
+  fail "explicit-ref-install: instalou versao inesperada ($installed_ref_version)"
+fi
+
+if [[ -L "$REF_TARGET/.agents/skills/agent-governance" ]]; then
+  fail "explicit-ref-install: manteve symlink apesar de ref explicita"
+else
+  pass "explicit-ref-install: forca snapshot local sem symlink quebrado"
+fi
+
+if echo "$ref_output" | grep -q 'Fonte da governanca: ref explicita: v1.0.1-test'; then
+  pass "explicit-ref-install: log exibe ref utilizada"
+else
+  fail "explicit-ref-install: log nao exibe ref utilizada"
+fi
+
+# ============================================================
+# Caso 8: Codex dinamico sem geracao contextual
 # ============================================================
 NON_CONTEXTUAL_TARGET="$TMP_DIR/non-contextual-project"
 mkdir -p "$NON_CONTEXTUAL_TARGET"
@@ -235,7 +304,27 @@ else
 fi
 
 # ============================================================
-# Caso 8: Codex perfil lean nao inclui analyze-project
+# Caso 9: ref invalida falha com mensagem clara
+# ============================================================
+INVALID_REF_TARGET="$TMP_DIR/invalid-ref-target"
+mkdir -p "$INVALID_REF_TARGET"
+echo "module invalid-ref" > "$INVALID_REF_TARGET/go.mod"
+
+invalid_ref_output="$(AI_GOVERNANCE_REF=ref-inexistente bash "$REF_REPO/install.sh" --tools codex --langs go "$INVALID_REF_TARGET" 2>&1 || true)"
+if echo "$invalid_ref_output" | grep -q 'ERRO: ref/tag invalida ou inexistente: ref-inexistente'; then
+  pass "invalid-ref-install: ref invalida reportada com clareza"
+else
+  fail "invalid-ref-install: mensagem de erro insuficiente para ref invalida"
+fi
+
+if AI_GOVERNANCE_REF=v1.0.1-test bash "$REF_REPO/install.sh" --tools codex --langs go "$REF_REPO" > /dev/null 2>&1; then
+  fail "self-install-ref: aceito com ref explicita"
+else
+  pass "self-install-ref: rejeitado mesmo com ref explicita"
+fi
+
+# ============================================================
+# Caso 10: Codex perfil lean nao inclui analyze-project
 # ============================================================
 LEAN_TARGET="$TMP_DIR/lean-project"
 mkdir -p "$LEAN_TARGET"
@@ -256,7 +345,7 @@ else
 fi
 
 # ============================================================
-# Caso 9 (was 8): idempotencia — rodar install 2x no mesmo projeto
+# Caso 11: idempotencia — rodar install 2x no mesmo projeto
 # ============================================================
 IDEM_TARGET="$TMP_DIR/idempotent-project"
 mkdir -p "$IDEM_TARGET"

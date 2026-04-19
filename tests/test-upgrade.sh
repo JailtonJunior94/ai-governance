@@ -24,6 +24,44 @@ fail() {
   FAILED=$((FAILED + 1))
 }
 
+set_repo_version() {
+  local repo_dir="$1"
+  local version="$2"
+  VERSION="$version" python3 - "$repo_dir/.agents/skills/agent-governance/SKILL.md" "$repo_dir/VERSION" <<'PY'
+from pathlib import Path
+import os
+import sys
+
+skill_path = Path(sys.argv[1])
+version_path = Path(sys.argv[2])
+version = os.environ["VERSION"]
+
+skill_content = skill_path.read_text()
+skill_content = __import__("re").sub(r"^version:\s+.*$", f"version: {version}", skill_content, count=1, flags=__import__("re").MULTILINE)
+skill_path.write_text(skill_content)
+version_path.write_text(f"{version}\n")
+PY
+}
+
+create_ref_fixture_repo() {
+  local repo_dir="$1"
+
+  mkdir -p "$repo_dir"
+  tar --exclude='.git' -cf - -C "$ROOT_DIR" . | tar -xf - -C "$repo_dir"
+  git -C "$repo_dir" init -q
+  git -C "$repo_dir" config user.name "Test Runner"
+  git -C "$repo_dir" config user.email "test@example.com"
+
+  set_repo_version "$repo_dir" "1.0.1"
+  git -C "$repo_dir" add .
+  git -C "$repo_dir" -c commit.gpgsign=false commit -q -m "baseline"
+  git -C "$repo_dir" tag "v1.0.1-test"
+
+  set_repo_version "$repo_dir" "1.0.2"
+  git -C "$repo_dir" add .agents/skills/agent-governance/SKILL.md VERSION
+  git -C "$repo_dir" -c commit.gpgsign=false commit -q -m "head"
+}
+
 # ============================================================
 # Setup: instalar governanca em projeto temporario (modo copy)
 # ============================================================
@@ -118,7 +156,56 @@ else
 fi
 
 # ============================================================
-# Caso 6: diretorio inexistente
+# Caso 6: ref explicita atualiza a partir do tag solicitado
+# ============================================================
+REF_REPO="$TMP_DIR/ref-upgrade-repo"
+create_ref_fixture_repo "$REF_REPO"
+
+REF_PROJECT="$TMP_DIR/ref-upgrade-project"
+mkdir -p "$REF_PROJECT"
+echo "module ref-upgrade" > "$REF_PROJECT/go.mod"
+
+GENERATE_CONTEXTUAL_GOVERNANCE=0 LINK_MODE=copy bash "$REF_REPO/install.sh" --tools codex --langs go "$REF_PROJECT" > /dev/null 2>&1
+
+initial_ref_version="$(awk '/^---$/{n++; next} n==1 && /^version:/{print $2; exit}' "$REF_PROJECT/.agents/skills/agent-governance/SKILL.md")"
+if [[ "$initial_ref_version" == "1.0.2" ]]; then
+  pass "explicit-ref-upgrade: setup instalou HEAD atual"
+else
+  fail "explicit-ref-upgrade: setup nao instalou HEAD esperado ($initial_ref_version)"
+fi
+
+ref_upgrade_output="$(bash "$REF_REPO/upgrade.sh" --ref v1.0.1-test "$REF_PROJECT" 2>&1)"
+upgraded_ref_version="$(awk '/^---$/{n++; next} n==1 && /^version:/{print $2; exit}' "$REF_PROJECT/.agents/skills/agent-governance/SKILL.md")"
+if [[ "$upgraded_ref_version" == "1.0.1" ]]; then
+  pass "explicit-ref-upgrade: restaurou snapshot do tag solicitado"
+else
+  fail "explicit-ref-upgrade: nao aplicou conteudo do tag solicitado ($upgraded_ref_version)"
+fi
+
+if echo "$ref_upgrade_output" | grep -q 'Fonte: ref explicita: v1.0.1-test'; then
+  pass "explicit-ref-upgrade: log exibe ref utilizada"
+else
+  fail "explicit-ref-upgrade: log nao exibe ref utilizada"
+fi
+
+# ============================================================
+# Caso 7: ref invalida falha com mensagem clara
+# ============================================================
+invalid_ref_output="$(bash "$REF_REPO/upgrade.sh" --ref ref-inexistente "$REF_PROJECT" 2>&1 || true)"
+if echo "$invalid_ref_output" | grep -q 'ERRO: ref/tag invalida ou inexistente: ref-inexistente'; then
+  pass "invalid-ref-upgrade: ref invalida reportada com clareza"
+else
+  fail "invalid-ref-upgrade: mensagem de erro insuficiente para ref invalida"
+fi
+
+if bash "$REF_REPO/upgrade.sh" --ref v1.0.1-test "$REF_REPO" > /dev/null 2>&1; then
+  fail "self-upgrade-ref: aceito com ref explicita"
+else
+  pass "self-upgrade-ref: rejeitado mesmo com ref explicita"
+fi
+
+# ============================================================
+# Caso 8: diretorio inexistente
 # ============================================================
 if bash "$UPGRADE_SCRIPT" "$TMP_DIR/nonexistent" > /dev/null 2>&1; then
   fail "nonexistent-dir: aceito sem erro"
@@ -127,7 +214,7 @@ else
 fi
 
 # ============================================================
-# Caso 7: diretorio sem governanca instalada
+# Caso 9: diretorio sem governanca instalada
 # ============================================================
 EMPTY_PROJECT="$TMP_DIR/empty-project"
 mkdir -p "$EMPTY_PROJECT"
@@ -139,7 +226,7 @@ else
 fi
 
 # ============================================================
-# Caso 8: diretorio alvo igual ao repo fonte
+# Caso 10: diretorio alvo igual ao repo fonte
 # ============================================================
 if bash "$UPGRADE_SCRIPT" "$ROOT_DIR" > /dev/null 2>&1; then
   fail "self-upgrade: aceito sem erro"
@@ -148,7 +235,7 @@ else
 fi
 
 # ============================================================
-# Caso 9: adaptadores atualizados durante upgrade
+# Caso 11: adaptadores atualizados durante upgrade
 # ============================================================
 ADAPTER_PROJECT="$TMP_DIR/adapter-project"
 mkdir -p "$ADAPTER_PROJECT"
@@ -175,7 +262,7 @@ else
 fi
 
 # ============================================================
-# Caso 10: Codex config regenerado durante upgrade
+# Caso 12: Codex config regenerado durante upgrade
 # ============================================================
 CODEX_PROJECT="$TMP_DIR/codex-project"
 mkdir -p "$CODEX_PROJECT"
@@ -202,7 +289,7 @@ else
 fi
 
 # ============================================================
-# Caso 11: schema version bump detectado e regenerado
+# Caso 13: schema version bump detectado e regenerado
 # ============================================================
 SCHEMA_PROJECT="$TMP_DIR/schema-project"
 mkdir -p "$SCHEMA_PROJECT"
@@ -244,7 +331,7 @@ else
 fi
 
 # ============================================================
-# Caso 12: cross-version upgrade preserva personalizacao local
+# Caso 14: cross-version upgrade preserva personalizacao local
 # ============================================================
 CUSTOM_PROJECT="$TMP_DIR/custom-project"
 mkdir -p "$CUSTOM_PROJECT"
@@ -304,7 +391,7 @@ else
 fi
 
 # ============================================================
-# Caso 13: cross-tool upgrade — codex-only → codex+claude
+# Caso 15: cross-tool upgrade — codex-only → codex+claude
 # ============================================================
 CROSS_CODEX="$TMP_DIR/cross-codex-project"
 mkdir -p "$CROSS_CODEX"
@@ -335,7 +422,7 @@ else
 fi
 
 # ============================================================
-# Caso 14: cross-tool upgrade — copilot-only → copilot+gemini
+# Caso 16: cross-tool upgrade — copilot-only → copilot+gemini
 # ============================================================
 CROSS_COPILOT="$TMP_DIR/cross-copilot-project"
 mkdir -p "$CROSS_COPILOT"

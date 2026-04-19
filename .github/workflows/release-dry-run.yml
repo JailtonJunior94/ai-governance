@@ -1,0 +1,148 @@
+name: Release Dry Run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    name: Validate release automation without side effects
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Fetch tags explicitly
+        run: git fetch --force --tags
+
+      - name: Compute release decision
+        id: semver
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          output="$(bash scripts/semver-next.sh)"
+          tag_count="$(git tag --list | wc -l | tr -d '[:space:]')"
+          printf '%s\n' "$output"
+
+          while IFS='=' read -r key value; do
+            [[ -n "$key" ]] || continue
+            printf '%s=%s\n' "$key" "$value" >> "$GITHUB_OUTPUT"
+          done <<< "$output"
+
+          echo "initial_tag_count=$tag_count" >> "$GITHUB_OUTPUT"
+
+      - name: Log release summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "action=${{ steps.semver.outputs.action }}"
+          echo "bootstrap_required=${{ steps.semver.outputs.bootstrap_required }}"
+          echo "release_required=${{ steps.semver.outputs.release_required }}"
+          echo "last_tag=${{ steps.semver.outputs.last_tag }}"
+          echo "base_version=${{ steps.semver.outputs.base_version }}"
+          echo "bump=${{ steps.semver.outputs.bump }}"
+          echo "target_version=${{ steps.semver.outputs.target_version }}"
+          echo "commit_range=${{ steps.semver.outputs.commit_range }}"
+          echo "commit_count=${{ steps.semver.outputs.commit_count }}"
+          echo "eligible_commit_count=${{ steps.semver.outputs.eligible_commit_count }}"
+
+      - name: Materialize dry-run artifacts
+        id: materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_version="${{ steps.semver.outputs.target_version }}"
+          release_required="${{ steps.semver.outputs.release_required }}"
+          bootstrap_required="${{ steps.semver.outputs.bootstrap_required }}"
+          release_date="$(date -u +%F)"
+
+          if [[ "$release_required" == "true" ]]; then
+            bash scripts/update-version.sh --version "$target_version"
+            bash scripts/update-changelog-release.sh --version "$target_version" --date "$release_date"
+            echo "materialized=true" >> "$GITHUB_OUTPUT"
+            echo "files_changed=VERSION CHANGELOG.md" >> "$GITHUB_OUTPUT"
+            echo "release_date=$release_date" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$bootstrap_required" == "true" ]]; then
+            echo "Bootstrap required: workflow dry-run intentionally skips tag creation and file materialization."
+          else
+            echo "No release required: VERSION and CHANGELOG.md remain unchanged in dry-run."
+          fi
+
+          echo "materialized=false" >> "$GITHUB_OUTPUT"
+          echo "files_changed=none" >> "$GITHUB_OUTPUT"
+          echo "release_date=" >> "$GITHUB_OUTPUT"
+
+      - name: Show resulting diff
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Changed files:"
+          git status --short VERSION CHANGELOG.md || true
+
+          echo ""
+          echo "Diff:"
+          git --no-pager diff -- VERSION CHANGELOG.md || true
+
+      - name: Guard rails
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current_tag_count="$(git tag --list | wc -l | tr -d '[:space:]')"
+          if [[ "$current_tag_count" != "${{ steps.semver.outputs.initial_tag_count }}" ]]; then
+            echo "ERRO: dry-run nao pode criar tags locais" >&2
+            exit 1
+          fi
+
+          while read -r status path; do
+            [[ -n "${status:-}" ]] || continue
+            case "${path:-}" in
+              VERSION|CHANGELOG.md)
+                ;;
+              *)
+                echo "ERRO: dry-run alterou arquivos fora do escopo esperado: ${path:-desconhecido}" >&2
+                git status --short
+                exit 1
+                ;;
+            esac
+          done < <(git status --short)
+
+      - name: Publish workflow summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Release Dry Run"
+            echo ""
+            echo "- action: \`${{ steps.semver.outputs.action }}\`"
+            echo "- bump: \`${{ steps.semver.outputs.bump }}\`"
+            echo "- target_version: \`${{ steps.semver.outputs.target_version }}\`"
+            echo "- bootstrap_required: \`${{ steps.semver.outputs.bootstrap_required }}\`"
+            echo "- release_required: \`${{ steps.semver.outputs.release_required }}\`"
+            echo "- commit_range: \`${{ steps.semver.outputs.commit_range }}\`"
+            echo "- commit_count: \`${{ steps.semver.outputs.commit_count }}\`"
+            echo "- eligible_commit_count: \`${{ steps.semver.outputs.eligible_commit_count }}\`"
+            echo "- files_changed: \`${{ steps.materialize.outputs.files_changed }}\`"
+            if [[ "${{ steps.materialize.outputs.materialized }}" == "true" ]]; then
+              echo "- release_date_used: \`${{ steps.materialize.outputs.release_date }}\`"
+            else
+              echo "- release_date_used: \`n/a\`"
+            fi
+            echo ""
+            echo "The job never pushes commits or creates tags."
+          } >> "$GITHUB_STEP_SUMMARY"

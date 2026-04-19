@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 # Verifica ou atualiza skills de governanca em um projeto alvo.
 # Uso:
-#   bash upgrade.sh [diretorio-alvo]                        # atualiza todas as skills desatualizadas
-#   bash upgrade.sh --check [diretorio-alvo]                 # apenas verifica, sem alterar arquivos
-#   bash upgrade.sh --langs go,node [diretorio-alvo]         # atualiza apenas skills das linguagens indicadas
-#   bash upgrade.sh --check --langs python [diretorio-alvo]  # verifica apenas skills de Python
+#   bash upgrade.sh [--ref <tag|branch|sha>] [diretorio-alvo]                         # atualiza todas as skills desatualizadas
+#   bash upgrade.sh --check [--ref <tag|branch|sha>] [diretorio-alvo]                 # apenas verifica, sem alterar arquivos
+#   bash upgrade.sh --langs go,node [--ref <tag|branch|sha>] [diretorio-alvo]         # atualiza apenas skills das linguagens indicadas
+#   bash upgrade.sh --check --langs python [--ref <tag|branch|sha>] [diretorio-alvo]  # verifica apenas skills de Python
 #
 # Compara a versao no frontmatter de cada SKILL.md do repositorio fonte
 # com a versao instalada no projeto alvo.
+# Aceita AI_GOVERNANCE_REF ou --ref para fixar a fonte da comparacao.
 
 set -euo pipefail
 
-SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GOVERNANCE_REF="${AI_GOVERNANCE_REF:-}"
+SOURCE_LABEL=""
 
-# shellcheck source=scripts/lib/install-common.sh
-source "$SOURCE_DIR/scripts/lib/install-common.sh"
-# shellcheck source=scripts/lib/codex-config.sh
-source "$SOURCE_DIR/scripts/lib/codex-config.sh"
+# shellcheck source=scripts/lib/source-ref.sh
+source "$SCRIPT_DIR/scripts/lib/source-ref.sh"
 
 CHECK_ONLY=0
 LANGS_FILTER=""
@@ -42,11 +43,23 @@ while [[ $# -gt 0 ]]; do
       LANGS_FILTER="$2"
       shift 2
       ;;
+    --ref)
+      GOVERNANCE_REF="$2"
+      shift 2
+      ;;
     *)
       break
       ;;
   esac
 done
+
+resolve_governance_source "$SCRIPT_DIR" "$GOVERNANCE_REF" SOURCE_DIR SOURCE_LABEL
+trap '[[ -n "${AI_GOVERNANCE_SOURCE_TMPDIR:-}" ]] && rm -rf "$AI_GOVERNANCE_SOURCE_TMPDIR"' EXIT
+
+# shellcheck source=scripts/lib/install-common.sh
+source "$SOURCE_DIR/scripts/lib/install-common.sh"
+# shellcheck source=scripts/lib/codex-config.sh
+source "$SOURCE_DIR/scripts/lib/codex-config.sh"
 
 # Mapeia --langs para lista de skills filtradas
 LANG_SKILL_NAMES=()
@@ -130,7 +143,7 @@ fi
 
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 
-if [[ "$SOURCE_DIR" == "$PROJECT_DIR" ]]; then
+if [[ "$SCRIPT_DIR" == "$PROJECT_DIR" || "$SOURCE_DIR" == "$PROJECT_DIR" ]]; then
   echo "ERRO: o diretorio alvo nao pode ser o proprio repositorio de regras."
   exit 1
 fi
@@ -236,7 +249,7 @@ refs_changed_files() {
 SOURCE_VERSION="$(cat "$SOURCE_DIR/VERSION" 2>/dev/null || echo 'unknown')"
 echo "ai-governance $SOURCE_VERSION"
 echo "Verificando skills em: $PROJECT_DIR"
-echo "Fonte: $SOURCE_DIR"
+echo "Fonte: $SOURCE_LABEL"
 echo ""
 
 while IFS= read -r skill_name; do

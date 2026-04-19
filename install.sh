@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Instala o pacote de governanca para IA em um projeto alvo.
 # Uso:
-#   bash install.sh [--dry-run] [diretorio-alvo]
-#   bash install.sh --tools claude,gemini --langs go,node [--dry-run] [diretorio-alvo]
+#   bash install.sh [--dry-run] [--ref <tag|branch|sha>] [diretorio-alvo]
+#   bash install.sh --tools claude,gemini --langs go,node [--dry-run] [--ref <tag|branch|sha>] [diretorio-alvo]
 #
 # Modo interativo (default): pergunta quais ferramentas e linguagens instalar.
 # Modo nao-interativo: usar --tools e/ou --langs para selecionar sem prompt.
 #   --tools all | claude,gemini,codex,copilot
 #   --langs all | go,node,python
+#   --ref <ref> usa uma ref/tag Git explicita como fonte da governanca.
 # --dry-run: mostra o que seria criado/sobrescrito sem executar.
 #
 # Variaveis de ambiente opcionais:
@@ -16,12 +17,14 @@
 #                             permanentemente acessivel no filesystem do projeto alvo.
 #   GENERATE_CONTEXTUAL_GOVERNANCE=0|1  — se 1 (default), gera AGENTS.md contextual
 #                                         a partir da deteccao do projeto.
+#   AI_GOVERNANCE_REF=<tag|branch|sha>  — equivalente a --ref para fixar a fonte.
 
 set -euo pipefail
 
 DRY_RUN=0
 TOOLS_ARG=""
 LANGS_ARG=""
+GOVERNANCE_REF="${AI_GOVERNANCE_REF:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -37,13 +40,24 @@ while [[ $# -gt 0 ]]; do
       LANGS_ARG="$2"
       shift 2
       ;;
+    --ref)
+      GOVERNANCE_REF="$2"
+      shift 2
+      ;;
     *)
       break
       ;;
   esac
 done
 
-RULES_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SOURCE_LABEL=""
+
+# shellcheck source=scripts/lib/source-ref.sh
+source "$SCRIPT_DIR/scripts/lib/source-ref.sh"
+resolve_governance_source "$SCRIPT_DIR" "$GOVERNANCE_REF" RULES_DIR SOURCE_LABEL
+trap '[[ -n "${AI_GOVERNANCE_SOURCE_TMPDIR:-}" ]] && rm -rf "$AI_GOVERNANCE_SOURCE_TMPDIR"' EXIT
+
 PROJECT_DIR="${1:-.}"
 
 if [[ ! -d "$PROJECT_DIR" ]]; then
@@ -62,12 +76,17 @@ LINK_MODE="${LINK_MODE:-symlink}"
 GENERATE_CONTEXTUAL_GOVERNANCE="${GENERATE_CONTEXTUAL_GOVERNANCE:-1}"
 GOVERNANCE_GENERATOR="$RULES_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
 
+if [[ -n "$GOVERNANCE_REF" && "$LINK_MODE" == "symlink" ]]; then
+  echo "AVISO: ref explicita exige snapshot estavel; ajustando LINK_MODE=copy."
+  LINK_MODE="copy"
+fi
+
 # shellcheck source=scripts/lib/install-common.sh
 source "$RULES_DIR/scripts/lib/install-common.sh"
 # shellcheck source=scripts/lib/codex-config.sh
 source "$RULES_DIR/scripts/lib/codex-config.sh"
 
-if [[ "$RULES_DIR" == "$PROJECT_DIR" ]]; then
+if [[ "$SCRIPT_DIR" == "$PROJECT_DIR" || "$RULES_DIR" == "$PROJECT_DIR" ]]; then
   echo "ERRO: o diretorio alvo nao pode ser o proprio repositorio de regras."
   exit 1
 fi
@@ -308,4 +327,7 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
   echo ""
   echo "Governanca para IA instalada em: $PROJECT_DIR"
   echo "Modo de instalacao da base canonica: $LINK_MODE"
+  echo "Fonte da governanca: $SOURCE_LABEL"
+else
+  echo "Fonte da governanca: $SOURCE_LABEL"
 fi

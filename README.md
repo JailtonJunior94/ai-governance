@@ -103,6 +103,7 @@ Valores aceitos:
 
 - `--tools`: `claude`, `gemini`, `codex`, `copilot`, `all`
 - `--langs`: `go`, `node`, `python`, `all`
+- `--ref`: qualquer ref resolvível por `git rev-parse`, como tag, branch ou SHA
 
 ### Dry run
 
@@ -111,6 +112,25 @@ bash install.sh --dry-run /caminho/do/projeto
 ```
 
 Esse modo mostra o que seria criado sem alterar arquivos.
+
+### Fonte explícita por tag ou ref
+
+Quando for importante fixar exatamente qual versão publicada está sendo consumida, use `--ref` ou `AI_GOVERNANCE_REF`.
+
+```bash
+# instalar a partir de um tag explícito
+bash install.sh --ref v1.0.0 /caminho/do/projeto
+
+# equivalente via ambiente
+AI_GOVERNANCE_REF=v1.0.0 bash install.sh --tools codex --langs go /caminho/do/projeto
+```
+
+Contrato operacional:
+
+- sem `--ref`, `install.sh` usa o checkout atual do repositório onde o script está sendo executado;
+- com `--ref`, o script materializa um snapshot limpo daquela árvore Git e registra a ref escolhida nos logs;
+- quando `--ref` é usado, `LINK_MODE=symlink` é ajustado automaticamente para `copy`, evitando symlinks para diretórios temporários;
+- refs inválidas falham com erro explícito antes de qualquer escrita no projeto-alvo.
 
 ### Modos de instalação e variáveis
 
@@ -224,6 +244,90 @@ Para frameworks, há detecção explícita para alguns casos em manifests encont
 - Node.js: `Express`, `NestJS`, `Fastify`, `Next.js`, `Hono`
 - Python: `FastAPI`, `Django`, `Flask`
 
+## Automação de release SemVer
+
+O script `scripts/semver-next.sh` calcula a decisão de release a partir do último tag SemVer alcançável e do `VERSION` atual. O contrato de saída é estável em `key=value` para consumo por workflows e scripts.
+
+```bash
+bash scripts/semver-next.sh
+```
+
+Saída esperada:
+
+- `action=bootstrap|release|no_release`
+- `bootstrap_required=true|false`
+- `release_required=true|false`
+- `last_tag=<tag ou vazio>`
+- `base_version=<semver sem prefixo v>`
+- `bump=major|minor|patch|no_release`
+- `target_version=<semver sem prefixo v>`
+- `commit_range=<range analisado>`
+
+Regras operacionais atuais:
+
+- sem tags históricas, o script retorna `action=bootstrap` e preserva `target_version` igual ao baseline de `VERSION`;
+- `feat` promove `minor`, `fix` promove `patch`, `!` ou `BREAKING CHANGE:` promovem `major`;
+- commits não classificáveis por si sós resultam em `no_release`.
+
+### Dry-run antes da ativação real
+
+O workflow `.github/workflows/release-dry-run.yml` existe para validar a decisão de release sem criar commit, tag ou push.
+
+Fluxo recomendado:
+
+```bash
+gh workflow run release-dry-run.yml --ref <branch-controlada>
+```
+
+Checklist mínimo antes de habilitar ou alterar o fluxo real:
+
+- confirmar que o dry-run mostra `action`, `bump` e `target_version` coerentes;
+- revisar o diff proposto para `VERSION` e `CHANGELOG.md`;
+- validar que cenários `no_release` não materializam arquivos;
+- registrar a aprovação desse dry-run na PR ou no relatório operacional da mudança.
+
+### Workflow real em `main`
+
+O workflow `.github/workflows/release.yml` roda somente em `push` para `main` e usa `concurrency` por ref para serializar execuções. O fluxo:
+
+- faz checkout com histórico completo e revalida tags e `origin/main`;
+- calcula a decisão com `scripts/semver-next.sh`;
+- trata rerun com tag já existente como `no-op`;
+- cria commit automatizado apenas para releases reais com mensagem `chore(release): vX.Y.Z [skip ci]`;
+- cria tag anotada `vX.Y.Z`;
+- falha explicitamente se encontrar divergência entre commit de release, `VERSION`, `CHANGELOG.md` e o tag esperado.
+
+O marcador `[skip ci]` é intencional: ele evita loop do próprio workflow de release e também impede que o commit automatizado dispare novamente a matriz de testes.
+
+### Bootstrap do primeiro tag
+
+Este repositório parte do baseline materializado em `VERSION=1.0.0` e da seção `## [1.0.0] - 2025-05-01` em `CHANGELOG.md`. O bootstrap deve acontecer exatamente uma vez, criando apenas o tag anotado `v1.0.0`.
+
+Procedimento operacional recomendado:
+
+1. Executar o dry-run em uma branch controlada e registrar a evidência.
+2. Confirmar que `VERSION` continua em `1.0.0` e que o `CHANGELOG.md` preserva a seção histórica `1.0.0`.
+3. Publicar o workflow real.
+4. Fazer um `push` controlado em `main` sem novos commits elegíveis de release.
+5. Verificar que o workflow criou apenas `v1.0.0` e não criou commit automatizado.
+
+Se o tag `v1.0.0` já existir, qualquer rerun deve terminar como `no-op`.
+
+### Rerun e recuperação operacional
+
+Rerun esperado:
+
+- se o tag alvo já existir, o workflow encerra em `no-op`;
+- se o intervalo contiver apenas `docs`, `chore`, `test`, `ci`, `build` ou `refactor` sem `!`, não há release;
+- se o workflow encontrar um commit de release já publicado em `origin/main` sem o tag correspondente, ele falha explicitamente para evitar duplicidade silenciosa.
+
+Rollback e recuperação:
+
+1. Se o workflow falhar antes de qualquer `push`, corrigir a causa e rerodar.
+2. Se houver commit de release em `main` sem o tag correspondente, não force novo release automático; recrie o tag faltante manualmente ou reverta o commit e só então rerode.
+3. Se o tag tiver sido criado com versão incorreta, remover o tag remoto e local, restaurar `VERSION` e `CHANGELOG.md` para o estado consistente anterior e disparar um novo `push` controlado.
+4. Após qualquer intervenção manual, executar novamente o dry-run antes de reabilitar o fluxo normal.
+
 ## Atualização de skills
 
 Use `upgrade.sh` quando a instalação tiver sido feita em modo `copy`.
@@ -239,6 +343,18 @@ bash upgrade.sh --check /caminho/do/projeto
 ```bash
 bash upgrade.sh /caminho/do/projeto
 ```
+
+### Atualizar contra uma ref explícita
+
+```bash
+# verificar comparando contra um tag específico
+bash upgrade.sh --check --ref v1.0.0 /caminho/do/projeto
+
+# atualizar usando um SHA ou branch específicos
+AI_GOVERNANCE_REF=v1.0.0 bash upgrade.sh /caminho/do/projeto
+```
+
+Sem `--ref`, o `upgrade.sh` compara contra o checkout atual do repositório fonte. Com `--ref`, a comparação e a cópia passam a usar exatamente o snapshot daquele tag, branch ou commit, e a fonte resolvida fica visível no output.
 
 O script compara:
 
