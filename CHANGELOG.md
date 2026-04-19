@@ -7,6 +7,8 @@ e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-04-19
+
 ### Added
 - Referencia `shared-patterns.md` com guidance cross-linguagem para Repository, Factory, DI, Error Handling e Value Objects
 - Scripts `check-skill-prerequisites.sh`, `check-token-budget.sh` e `governance-wrapper.sh` para validar pre-condicoes e budget antes de invocar skills
