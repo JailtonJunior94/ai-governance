@@ -27,7 +27,8 @@ source "$HOOK_DIR/../../scripts/lib/parse-hook-input.sh" 2>/dev/null \
   || source "$(cd "$HOOK_DIR/../.." && pwd)/scripts/lib/parse-hook-input.sh" 2>/dev/null \
   || { echo "AVISO: parse-hook-input.sh nao encontrado" >&2; exit 0; }
 
-file_path="$(cat | parse_file_path)"
+_stdin="$(cat)"
+file_path="$(printf '%s' "$_stdin" | parse_file_path)"
 
 [[ -n "$file_path" ]] || exit 0
 

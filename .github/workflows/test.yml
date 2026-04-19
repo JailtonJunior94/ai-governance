@@ -37,5 +37,8 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install Python dependencies
+        run: pip install tiktoken
+
       - name: Run ${{ matrix.suite }} tests
         run: bash tests/test-${{ matrix.suite }}.sh

@@ -7,7 +7,7 @@
 
 parse_file_path() {
   local input
-  input="$(cat)"
+  input="$(head -c 65536)"
 
   local file_path=""
   if command -v python3 >/dev/null 2>&1; then

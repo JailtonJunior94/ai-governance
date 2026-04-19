@@ -14,11 +14,16 @@ description: Implementa alteracoes em codigo Python usando governanca base, conv
 3. Ler `pyproject.toml`, `setup.py` ou `requirements.txt` para identificar dependencias e versao de Python.
 4. Executar `bash .agents/skills/agent-governance/scripts/detect-toolchain.sh` para descobrir comandos de fmt, test e lint.
 
+**Patterns frequentes (inline — evitar carregar patterns.md para estes)**
+- **Dependency Injection:** Preferir injecao via construtor ou parametros de funcao. Em FastAPI, usar `Depends()`. Depender de Protocol ou ABC em fronteiras de IO.
+- **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL. Nao retornar instancias ORM diretamente — mapear para entidades de dominio.
+- **Dataclasses:** Preferir `dataclass` ou `attrs` para value objects e DTOs. Usar `frozen=True` para imutabilidade. Usar `__post_init__` para invariantes.
+
 **Etapa 2: Selecionar apenas o contexto necessario**
 1. Ler `references/conventions.md` quando a tarefa envolver estrutura de projeto, organizacao de modulos ou padroes de importacao.
 2. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, fixtures ou cobertura.
 3. Ler `references/api.md` quando a tarefa envolver handlers HTTP, middlewares, DTOs, validacao de request ou serializacao.
-4. Ler `references/patterns.md` quando a tarefa envolver dependency injection, repository, dataclasses, strategy ou organizacao de modulos.
+4. Ler `references/patterns.md` **somente** quando a tarefa envolver strategy, composicao vs heranca ou organizacao de modulos nao cobertos inline. DI, Repository e Dataclasses ja estao definidos na secao "Patterns frequentes" acima e NAO devem motivar o carregamento deste arquivo — isso evita ~480 tokens redundantes.
 5. Ler `references/concurrency.md` quando a tarefa envolver asyncio, threading, multiprocessing, controle de concorrencia ou paralelismo.
 6. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou health checks.
 7. Ler `references/build.md` quando a tarefa envolver Dockerfile, pipeline de CI, packaging, gerenciamento de dependencias ou distribuicao.

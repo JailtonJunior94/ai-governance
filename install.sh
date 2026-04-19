@@ -9,6 +9,13 @@
 #   --tools all | claude,gemini,codex,copilot
 #   --langs all | go,node,python
 # --dry-run: mostra o que seria criado/sobrescrito sem executar.
+#
+# Variaveis de ambiente opcionais:
+#   LINK_MODE=symlink|copy  — modo de instalacao da base canonica (default: symlink).
+#                             Use LINK_MODE=copy quando o repo de governanca nao estiver
+#                             permanentemente acessivel no filesystem do projeto alvo.
+#   GENERATE_CONTEXTUAL_GOVERNANCE=0|1  — se 1 (default), gera AGENTS.md contextual
+#                                         a partir da deteccao do projeto.
 
 set -euo pipefail
 

@@ -34,7 +34,7 @@ list_assets() {
   if [[ ! -d "$assets_dir" ]]; then
     return
   fi
-  find "$assets_dir" -maxdepth 1 -type f -name '*.md' | LC_ALL=C sort
+  find "$assets_dir" -maxdepth 1 -type f -name '*.md' -print0 | LC_ALL=C sort -z | tr '\0' '\n'
 }
 
 # Skills que invocam review como parte do fluxo

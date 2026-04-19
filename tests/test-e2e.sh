@@ -106,6 +106,46 @@ else
   fail "hook-preload: emitiu alerta indevido para arquivo .md"
 fi
 
+# ========== ETAPA 3b: Hook validate-governance modo fail ==========
+echo "=== Etapa 3b: Hook validate-governance (fail mode) ==="
+
+hook_fail_exit=0
+echo '{"tool_input":{"file_path":"'"$tmpdir/project/.agents/skills/agent-governance/SKILL.md"'"}}' | GOVERNANCE_HOOK_MODE=fail bash "$tmpdir/project/.claude/hooks/validate-governance.sh" 2>/dev/null || hook_fail_exit=$?
+if [[ "$hook_fail_exit" -ne 0 ]]; then
+  pass "hook-governance-fail: exit 1 para arquivo de governanca em modo fail"
+else
+  fail "hook-governance-fail: exit 0 indevido em modo fail"
+fi
+
+# Arquivo normal deve passar mesmo em modo fail
+hook_normal_fail=0
+echo '{"tool_input":{"file_path":"'"$tmpdir/project/main.go"'"}}' | GOVERNANCE_HOOK_MODE=fail bash "$tmpdir/project/.claude/hooks/validate-governance.sh" 2>/dev/null || hook_normal_fail=$?
+if [[ "$hook_normal_fail" -eq 0 ]]; then
+  pass "hook-governance-fail: exit 0 para arquivo normal em modo fail"
+else
+  fail "hook-governance-fail: exit nao-zero indevido para arquivo normal"
+fi
+
+# ========== ETAPA 4b: Hook validate-preload modo fail ==========
+echo "=== Etapa 4b: Hook validate-preload (fail mode) ==="
+
+hook_preload_fail=0
+echo '{"tool_input":{"file_path":"'"$tmpdir/project/main.go"'"}}' | GOVERNANCE_PRELOAD_MODE=fail bash "$tmpdir/project/.claude/hooks/validate-preload.sh" 2>/dev/null || hook_preload_fail=$?
+if [[ "$hook_preload_fail" -ne 0 ]]; then
+  pass "hook-preload-fail: exit 1 para arquivo .go em modo fail"
+else
+  fail "hook-preload-fail: exit 0 indevido para .go em modo fail"
+fi
+
+# Arquivo nao-codigo deve passar mesmo em modo fail
+hook_md_fail=0
+echo '{"tool_input":{"file_path":"'"$tmpdir/project/README.md"'"}}' | GOVERNANCE_PRELOAD_MODE=fail bash "$tmpdir/project/.claude/hooks/validate-preload.sh" 2>/dev/null || hook_md_fail=$?
+if [[ "$hook_md_fail" -eq 0 ]]; then
+  pass "hook-preload-fail: exit 0 para arquivo .md em modo fail"
+else
+  fail "hook-preload-fail: exit nao-zero indevido para .md"
+fi
+
 # ========== ETAPA 5: Validate task evidence ==========
 echo "=== Etapa 5: Validate task evidence ==="
 

@@ -235,6 +235,71 @@ else
 fi
 
 # ============================================================
+# Caso 8: Codex perfil lean nao inclui analyze-project
+# ============================================================
+LEAN_TARGET="$TMP_DIR/lean-project"
+mkdir -p "$LEAN_TARGET"
+echo "module lean" > "$LEAN_TARGET/go.mod"
+
+CODEX_SKILL_PROFILE=lean bash "$INSTALL_SCRIPT" --tools codex --langs go "$LEAN_TARGET" > /dev/null 2>&1
+
+if grep -q '".agents/skills/analyze-project"' "$LEAN_TARGET/.codex/config.toml" 2>/dev/null; then
+  fail "codex-lean: analyze-project presente no perfil lean"
+else
+  pass "codex-lean: analyze-project ausente do perfil lean"
+fi
+
+if grep -q '".agents/skills/go-implementation"' "$LEAN_TARGET/.codex/config.toml" 2>/dev/null; then
+  pass "codex-lean: go-implementation presente no perfil lean"
+else
+  fail "codex-lean: go-implementation ausente do perfil lean"
+fi
+
+# ============================================================
+# Caso 9 (was 8): idempotencia — rodar install 2x no mesmo projeto
+# ============================================================
+IDEM_TARGET="$TMP_DIR/idempotent-project"
+mkdir -p "$IDEM_TARGET"
+echo "module idempotent" > "$IDEM_TARGET/go.mod"
+
+bash "$INSTALL_SCRIPT" --tools claude,codex --langs go "$IDEM_TARGET" < /dev/null 2>/dev/null
+first_settings="$(cat "$IDEM_TARGET/.claude/settings.local.json")"
+
+# Segunda instalacao no mesmo projeto
+bash "$INSTALL_SCRIPT" --tools claude,codex --langs go "$IDEM_TARGET" < /dev/null 2>/dev/null
+second_settings="$(cat "$IDEM_TARGET/.claude/settings.local.json")"
+
+# AGENTS.md pode divergir legitimamente na arvore de diretorios (2a instalacao ve mais dirs).
+# Validar que o conteudo estrutural (governanca, schema, regras) permanece consistente.
+first_schema="$(grep 'governance-schema' "$IDEM_TARGET/AGENTS.md" || true)"
+if [[ -n "$first_schema" ]]; then
+  pass "idempotent: AGENTS.md preserva schema version apos 2a instalacao"
+else
+  fail "idempotent: AGENTS.md perdeu schema version apos 2a instalacao"
+fi
+
+if [[ "$first_settings" == "$second_settings" ]]; then
+  pass "idempotent: settings.local.json identico apos 2a instalacao"
+else
+  fail "idempotent: settings.local.json divergiu apos 2a instalacao"
+fi
+
+# Verificar que nao ha hooks duplicados
+hook_count="$(grep -c 'validate-governance' "$IDEM_TARGET/.claude/settings.local.json" || true)"
+if [[ "$hook_count" -le 1 ]]; then
+  pass "idempotent: hook validate-governance nao duplicado ($hook_count ocorrencias)"
+else
+  fail "idempotent: hook validate-governance duplicado ($hook_count ocorrencias)"
+fi
+
+# Skills continuam funcionando
+if [[ -e "$IDEM_TARGET/.agents/skills/go-implementation/SKILL.md" ]]; then
+  pass "idempotent: skill go-implementation preservada"
+else
+  fail "idempotent: skill go-implementation perdida"
+fi
+
+# ============================================================
 # Resumo
 # ============================================================
 echo ""

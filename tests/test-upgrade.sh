@@ -228,6 +228,128 @@ else
 fi
 
 # ============================================================
+# Caso 12: cross-version upgrade preserva personalizacao local
+# ============================================================
+CUSTOM_PROJECT="$TMP_DIR/custom-project"
+mkdir -p "$CUSTOM_PROJECT"
+echo "module custom-test" > "$CUSTOM_PROJECT/go.mod"
+
+LINK_MODE=copy bash "$INSTALL_SCRIPT" --tools claude,gemini --langs go "$CUSTOM_PROJECT" > /dev/null 2>&1
+
+# Simular personalizacao local: usuario editou settings.local.json com permissoes extras
+original_settings="$(cat "$CUSTOM_PROJECT/.claude/settings.local.json")"
+python3 -c "
+import json, sys
+with open('$CUSTOM_PROJECT/.claude/settings.local.json') as f:
+    data = json.load(f)
+data.setdefault('permissions', {}).setdefault('allow', []).append('Bash(make:*)')
+with open('$CUSTOM_PROJECT/.claude/settings.local.json', 'w') as f:
+    json.dump(data, f, indent=2)
+" 2>/dev/null
+
+custom_settings="$(cat "$CUSTOM_PROJECT/.claude/settings.local.json")"
+
+# Simular schema antigo para forcar upgrade
+sed 's/governance-schema: 1.0.0/governance-schema: 0.8.0/' "$CUSTOM_PROJECT/AGENTS.md" > "$CUSTOM_PROJECT/AGENTS.md.tmp"
+mv "$CUSTOM_PROJECT/AGENTS.md.tmp" "$CUSTOM_PROJECT/AGENTS.md"
+
+# Forcar divergencia em skill para triggerar upgrade
+echo "# modificado" >> "$CUSTOM_PROJECT/.agents/skills/agent-governance/SKILL.md"
+
+# Rodar upgrade
+bash "$UPGRADE_SCRIPT" "$CUSTOM_PROJECT" > /dev/null 2>&1
+
+# Verificar que settings.local.json preservou a personalizacao (upgrade nao sobrescreve)
+if grep -q 'make' "$CUSTOM_PROJECT/.claude/settings.local.json" 2>/dev/null; then
+  pass "cross-version: settings.local.json preservou personalizacao"
+else
+  fail "cross-version: settings.local.json perdeu personalizacao"
+fi
+
+# Verificar que hooks continuam presentes
+if grep -q 'validate-governance' "$CUSTOM_PROJECT/.claude/settings.local.json" 2>/dev/null; then
+  pass "cross-version: hooks preservados em settings"
+else
+  fail "cross-version: hooks perdidos apos upgrade"
+fi
+
+# Verificar que AGENTS.md foi regenerado com schema atualizado
+if grep -q 'governance-schema: 1.0.0' "$CUSTOM_PROJECT/AGENTS.md" 2>/dev/null; then
+  pass "cross-version: AGENTS.md atualizado para schema 1.0.0"
+else
+  fail "cross-version: AGENTS.md nao atualizado"
+fi
+
+# Verificar que skills foram restauradas
+if ! grep -q '# modificado' "$CUSTOM_PROJECT/.agents/skills/agent-governance/SKILL.md" 2>/dev/null; then
+  pass "cross-version: skill agent-governance restaurada"
+else
+  fail "cross-version: skill agent-governance nao restaurada"
+fi
+
+# ============================================================
+# Caso 13: cross-tool upgrade — codex-only → codex+claude
+# ============================================================
+CROSS_CODEX="$TMP_DIR/cross-codex-project"
+mkdir -p "$CROSS_CODEX"
+echo "module cross-codex" > "$CROSS_CODEX/go.mod"
+
+# Instalar apenas codex
+LINK_MODE=copy bash "$INSTALL_SCRIPT" --tools codex --langs go "$CROSS_CODEX" > /dev/null 2>&1
+
+if [[ -f "$CROSS_CODEX/.codex/config.toml" ]] && [[ ! -d "$CROSS_CODEX/.claude" ]]; then
+  pass "cross-tool-codex: instalacao inicial apenas codex"
+else
+  fail "cross-tool-codex: estado inicial inesperado"
+fi
+
+# Agora instalar claude no mesmo projeto
+LINK_MODE=copy bash "$INSTALL_SCRIPT" --tools claude --langs go "$CROSS_CODEX" > /dev/null 2>&1
+
+if [[ -f "$CROSS_CODEX/.claude/hooks/validate-governance.sh" ]]; then
+  pass "cross-tool-codex: claude adicionado com hooks"
+else
+  fail "cross-tool-codex: claude nao adicionado"
+fi
+
+if [[ -f "$CROSS_CODEX/.codex/config.toml" ]]; then
+  pass "cross-tool-codex: codex preservado apos adicionar claude"
+else
+  fail "cross-tool-codex: codex perdido apos adicionar claude"
+fi
+
+# ============================================================
+# Caso 14: cross-tool upgrade — copilot-only → copilot+gemini
+# ============================================================
+CROSS_COPILOT="$TMP_DIR/cross-copilot-project"
+mkdir -p "$CROSS_COPILOT"
+echo "module cross-copilot" > "$CROSS_COPILOT/go.mod"
+
+# Instalar apenas copilot
+LINK_MODE=copy bash "$INSTALL_SCRIPT" --tools copilot --langs go "$CROSS_COPILOT" > /dev/null 2>&1
+
+if [[ -d "$CROSS_COPILOT/.github/agents" ]] && [[ ! -d "$CROSS_COPILOT/.gemini" ]]; then
+  pass "cross-tool-copilot: instalacao inicial apenas copilot"
+else
+  fail "cross-tool-copilot: estado inicial inesperado"
+fi
+
+# Agora instalar gemini no mesmo projeto
+LINK_MODE=copy bash "$INSTALL_SCRIPT" --tools gemini --langs go "$CROSS_COPILOT" > /dev/null 2>&1
+
+if [[ -d "$CROSS_COPILOT/.gemini/commands" ]]; then
+  pass "cross-tool-copilot: gemini adicionado com commands"
+else
+  fail "cross-tool-copilot: gemini nao adicionado"
+fi
+
+if [[ -d "$CROSS_COPILOT/.github/agents" ]]; then
+  pass "cross-tool-copilot: copilot preservado apos adicionar gemini"
+else
+  fail "cross-tool-copilot: copilot perdido apos adicionar gemini"
+fi
+
+# ============================================================
 # Resumo
 # ============================================================
 echo ""

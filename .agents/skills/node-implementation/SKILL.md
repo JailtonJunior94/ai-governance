@@ -15,11 +15,16 @@ description: Implementa alteracoes em codigo Node/TypeScript usando governanca b
 4. Ler `tsconfig.json` quando existir para identificar versao alvo e configuracao de tipos.
 5. Executar `bash .agents/skills/agent-governance/scripts/detect-toolchain.sh` para descobrir comandos de fmt, test e lint.
 
+**Patterns frequentes (inline — evitar carregar patterns.md para estes)**
+- **Factory Function:** Preferir factory functions sobre classes quando nao houver estado mutavel. Usar factory quando a construcao envolver validacao ou defaults complexos.
+- **Dependency Injection:** Preferir injecao via construtor sobre containers automaticos, salvo quando o projeto ja adotar um container (tsyringe, inversify, NestJS IoC). Depender de interfaces/types em fronteiras de IO.
+- **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL. Nao retornar entidades ORM diretamente — mapear para entidades de dominio.
+
 **Etapa 2: Selecionar apenas o contexto necessario**
 1. Ler `references/conventions.md` quando a tarefa envolver estrutura de projeto, organizacao de modulos ou padroes de importacao.
 2. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, mocking ou cobertura.
 3. Ler `references/api.md` quando a tarefa envolver handlers HTTP, middlewares, DTOs, validacao de request ou serializacao.
-4. Ler `references/patterns.md` quando a tarefa envolver dependency injection, repository, factory, strategy ou organizacao de modulos.
+4. Ler `references/patterns.md` **somente** quando a tarefa envolver strategy, composicao vs heranca ou organizacao de modulos nao cobertos inline. Factory, DI e Repository ja estao definidos na secao "Patterns frequentes" acima e NAO devem motivar o carregamento deste arquivo — isso evita ~500 tokens redundantes.
 5. Ler `references/concurrency.md` quando a tarefa envolver Promises, controle de concorrencia, worker threads, streams ou event loop.
 6. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou health checks.
 7. Ler `references/build.md` quando a tarefa envolver Dockerfile, pipeline de CI, bundling, package manager ou empacotamento.

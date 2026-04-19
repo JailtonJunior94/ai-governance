@@ -12,8 +12,13 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def estimate_tokens(text: str) -> int:
-    """chars/3.5 — more accurate than chars/4 for mixed PT-BR/English with BPE tokenizers."""
-    return round(len(text) / 3.5)
+    """Estimate token count using tiktoken (cl100k_base) when available, falling back to chars/3.5."""
+    try:
+        import tiktoken
+        enc = tiktoken.get_encoding("cl100k_base")
+        return len(enc.encode(text))
+    except (ImportError, Exception):
+        return round(len(text) / 3.5)
 
 
 def file_metrics(path: Path) -> dict[str, int | str]:
@@ -168,6 +173,40 @@ def codex_skills() -> list[str]:
     return skills
 
 
+def tool_totals() -> dict[str, dict[str, int]]:
+    """Total tokens installed per tool (skills + refs + wrappers)."""
+    tools: dict[str, dict[str, int]] = {}
+
+    # Claude Code: .claude/agents + .claude/skills (symlinks to .agents/skills)
+    claude_files: list[Path] = []
+    claude_files += sorted((ROOT / ".claude/agents").glob("*.md"))
+    claude_files += sorted((ROOT / ".claude/rules").glob("*.md"))
+    for skill_dir in sorted((ROOT / ".agents/skills").iterdir()):
+        if skill_dir.is_dir():
+            for md in sorted(skill_dir.rglob("*.md")):
+                claude_files.append(md)
+    tools["claude"] = {"tokens_est": sum(int(file_metrics(f)["tokens_est"]) for f in claude_files if f.exists())}
+
+    # Gemini CLI: .gemini/commands + .agents/skills (read at runtime)
+    gemini_files: list[Path] = sorted((ROOT / ".gemini/commands").glob("*.toml"))
+    tools["gemini"] = {"tokens_est": sum(int(file_metrics(f)["tokens_est"]) for f in gemini_files if f.exists())}
+
+    # Codex: only skills listed in .codex/config.toml
+    codex_tokens = 0
+    for skill_name in codex_skills():
+        skill_dir = ROOT / ".agents/skills" / skill_name
+        if skill_dir.is_dir():
+            for md in sorted(skill_dir.rglob("*.md")):
+                codex_tokens += int(file_metrics(md)["tokens_est"])
+    tools["codex"] = {"tokens_est": codex_tokens}
+
+    # Copilot: .github/agents + .github/skills (symlinks)
+    copilot_files: list[Path] = sorted((ROOT / ".github/agents").glob("*.md"))
+    tools["copilot"] = {"tokens_est": sum(int(file_metrics(f)["tokens_est"]) for f in copilot_files if f.exists())}
+
+    return tools
+
+
 def gather_metrics() -> dict[str, object]:
     skill_files = sorted((ROOT / ".agents/skills").glob("*/SKILL.md"))
     reference_files = sorted((ROOT / ".agents/skills").glob("*/references/*.md"))
@@ -178,6 +217,7 @@ def gather_metrics() -> dict[str, object]:
     return {
         "baselines": baseline_metrics(),
         "flows": flow_metrics(),
+        "tool_totals": tool_totals(),
         "skills": [file_metrics(path) for path in skill_files],
         "references": [file_metrics(path) for path in reference_files],
         "wrappers": [file_metrics(path) for path in wrapper_files],
@@ -207,6 +247,14 @@ def render_table(metrics: dict[str, object]) -> str:
         lines.append(
             f"- {flow_name}: est_tokens={payload['tokens_est']}"
         )
+
+    lines.append("")
+    lines.append("Tool Totals:")
+    totals = metrics["tool_totals"]
+    assert isinstance(totals, dict)
+    for tool_name, payload in totals.items():
+        assert isinstance(payload, dict)
+        lines.append(f"- {tool_name}: est_tokens={payload['tokens_est']}")
 
     lines.append("")
     lines.append("Codex:")

@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+export LC_ALL=C
+
 if [[ $# -ne 1 ]]; then
   echo "Uso: $0 <relatorio-execucao-tarefa.md>"
   exit 2
@@ -64,6 +66,31 @@ if grep -Eiq "PRD[[:space:]]*:" "$report_file"; then
   if ! grep -Eiq "(RF-?[0-9]+|REQ-?[0-9]+)" "$report_file"; then
     echo "FALTANDO: nenhum ID de requisito (RF-nn ou REQ-nn) referenciado no relatório"
     missing=1
+  fi
+fi
+
+# Rastreabilidade cruzada: verificar que cada RF-nn/REQ-nn citado no relatório existe no PRD referenciado.
+prd_path="$(grep -Eio 'PRD[[:space:]]*:[[:space:]]*(.+)' "$report_file" | head -1 | sed 's/^PRD[[:space:]]*:[[:space:]]*//' | tr -d '[:space:]')"
+if [[ -n "$prd_path" && -f "$prd_path" ]]; then
+  # Extrair IDs do relatório e verificar cada um no PRD
+  report_ids="$(grep -Eio '(RF-?[0-9]+|REQ-?[0-9]+)' "$report_file" | sort -u)"
+  for req_id in $report_ids; do
+    if ! grep -Fiq "$req_id" "$prd_path" 2>/dev/null; then
+      echo "FALTANDO: requisito $req_id citado no relatório não encontrado no PRD ($prd_path)"
+      missing=1
+    fi
+  done
+elif [[ -n "$prd_path" ]]; then
+  # PRD referenciado mas arquivo não encontrado — tentar caminho relativo ao relatório
+  report_dir="$(dirname "$report_file")"
+  if [[ -f "$report_dir/$prd_path" ]]; then
+    report_ids="$(grep -Eio '(RF-?[0-9]+|REQ-?[0-9]+)' "$report_file" | sort -u)"
+    for req_id in $report_ids; do
+      if ! grep -Fiq "$req_id" "$report_dir/$prd_path" 2>/dev/null; then
+        echo "FALTANDO: requisito $req_id citado no relatório não encontrado no PRD ($report_dir/$prd_path)"
+        missing=1
+      fi
+    done
   fi
 fi
 
