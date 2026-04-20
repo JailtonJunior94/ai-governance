@@ -1,5 +1,7 @@
 # Enforcement Matrix
 
+<!-- @lang: all -->
+
 Tabela de capacidades de enforcement por ferramenta de IA suportada.
 
 ## Legenda

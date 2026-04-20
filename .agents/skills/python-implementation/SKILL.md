@@ -19,6 +19,27 @@ description: Implementa alteracoes em codigo Python usando governanca base, conv
 - **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL. Nao retornar instancias ORM diretamente — mapear para entidades de dominio.
 - **Dataclasses:** Preferir `dataclass` ou `attrs` para value objects e DTOs. Usar `frozen=True` para imutabilidade. Usar `__post_init__` para invariantes.
 
+**Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
+| Arquivo | Descricao |
+|---------|-----------|
+| `references/architecture.md` | Principios de arquitetura compartilhados |
+| `references/conventions.md` | Estrutura de projeto, organizacao de modulos, padroes de importacao |
+| `references/testing.md` | Pytest fixtures, parametrize, cobertura |
+| `references/api.md` | FastAPI/Flask handlers, middlewares, DTOs, validacao |
+| `references/patterns.md` | Strategy, composicao, organizacao de modulos |
+| `references/concurrency.md` | Asyncio, threading, multiprocessing, event loop |
+| `references/resilience.md` | Retries, circuit breakers, timeouts, health checks |
+| `references/build.md` | Dockerfile, CI, packaging, gerenciamento de dependencias |
+| `references/graceful-lifecycle.md` | Shutdown gracioso, SIGTERM/SIGINT, asyncio cleanup |
+| `references/configuration.md` | Pydantic settings, variaveis de ambiente, inicializacao |
+| `references/persistence.md` | SQLAlchemy repositories, transactions, migrations |
+| `references/observability.md` | Logging, tracing, metricas |
+| `references/security.md` | Autenticacao, autorizacao, validacao, rate limiting, CORS |
+| `references/messaging.md` | Producao/consumo de mensagens, eventos, filas, idempotencia |
+| `references/examples-domain-flow.md` | Esqueleto end-to-end com dataclass/pytest |
+| `references/examples-testing.md` | Fixtures, parametrize, schema validation |
+| `references/examples-infrastructure.md` | Paginacao, API versioning |
+
 **Etapa 2: Selecionar apenas o contexto necessario**
 1. Ler `references/conventions.md` quando a tarefa envolver estrutura de projeto, organizacao de modulos ou padroes de importacao.
 2. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, fixtures ou cobertura.

@@ -34,6 +34,9 @@ jobs:
           - evidence-validators
           - mutation
           - skill-integration
+          - copilot-e2e
+          - codex-e2e
+          - harness-execution
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +47,13 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install tiktoken
+
+      - name: Install bats-core
+        if: matrix.suite == 'mutation'
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            npm install -g bats
+          fi
 
       - name: Run ${{ matrix.suite }} tests
         run: bash tests/test-${{ matrix.suite }}.sh

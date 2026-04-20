@@ -1,5 +1,7 @@
 # Principios de Lifecycle (Cross-Linguagem)
 
+<!-- @lang: all -->
+
 ## Inicializacao
 - Ordem explicita: config -> logger -> telemetry -> database -> cache -> messaging -> server.
 - Fail fast se dependencia obrigatoria indisponivel na inicializacao.

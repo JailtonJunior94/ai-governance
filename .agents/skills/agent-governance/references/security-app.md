@@ -1,5 +1,7 @@
 # Seguranca de Aplicacao
 
+<!-- @lang: go, node, python -->
+
 ## Input Validation
 - Usar schema validation (Node: zod, joi, class-validator; Python: pydantic, marshmallow, attrs) em vez de validacao manual.
 - Usar allowlist em vez de denylist quando possivel.

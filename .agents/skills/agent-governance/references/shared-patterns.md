@@ -1,5 +1,7 @@
 # Patterns Compartilhados (Cross-Linguagem)
 
+<!-- @lang: go, node, python -->
+
 Patterns recorrentes aplicaveis a Go, Node/TypeScript e Python. Cada stack adapta a sintaxe mas preserva a intencao.
 
 ## Repository

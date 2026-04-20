@@ -1,5 +1,10 @@
 # ai-governance
 
+> **TL;DR para agentes:** Governanca multi-ferramenta (Claude Code, Codex, Gemini CLI, Copilot) com 27 skills em `.agents/skills/`.
+> Instalar: `bash install.sh --tools <tool> --langs <lang> <target>`. Skills de linguagem: `go-implementation`, `node-implementation`, `python-implementation`.
+> Governanca base: `AGENTS.md` → `agent-governance/SKILL.md` → referencias sob demanda. Fluxo spec-driven: PRD → TechSpec → Tasks → Execute → Review.
+> Adaptar: cada ferramenta tem adaptador proprio (`.claude/`, `.gemini/`, `.codex/`, `.github/`). Fonte de verdade unica: `.agents/skills/`.
+
 Governança reutilizável para agentes de IA em repositórios reais, com uma base canônica de skills em `.agents/skills/`, adaptadores por ferramenta e geração contextual de instruções para o projeto-alvo.
 
 O repositório existe para evitar duplicação de processo entre Claude Code, Codex, Gemini CLI e GitHub Copilot, mantendo uma única fonte de verdade para regras operacionais, referências e fluxos de trabalho.
@@ -119,10 +124,10 @@ Quando for importante fixar exatamente qual versão publicada está sendo consum
 
 ```bash
 # instalar a partir de um tag explícito
-bash install.sh --ref v1.0.0 /caminho/do/projeto
+bash install.sh --ref v1.0.1 /caminho/do/projeto
 
 # equivalente via ambiente
-AI_GOVERNANCE_REF=v1.0.0 bash install.sh --tools codex --langs go /caminho/do/projeto
+AI_GOVERNANCE_REF=v1.0.1 bash install.sh --tools codex --langs go /caminho/do/projeto
 ```
 
 Contrato operacional:
@@ -348,10 +353,10 @@ bash upgrade.sh /caminho/do/projeto
 
 ```bash
 # verificar comparando contra um tag específico
-bash upgrade.sh --check --ref v1.0.0 /caminho/do/projeto
+bash upgrade.sh --check --ref v1.0.1 /caminho/do/projeto
 
 # atualizar usando um SHA ou branch específicos
-AI_GOVERNANCE_REF=v1.0.0 bash upgrade.sh /caminho/do/projeto
+AI_GOVERNANCE_REF=v1.0.1 bash upgrade.sh /caminho/do/projeto
 ```
 
 Sem `--ref`, o `upgrade.sh` compara contra o checkout atual do repositório fonte. Com `--ref`, a comparação e a cópia passam a usar exatamente o snapshot daquele tag, branch ou commit, e a fonte resolvida fica visível no output.

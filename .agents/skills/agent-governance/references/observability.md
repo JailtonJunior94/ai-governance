@@ -1,5 +1,7 @@
 # Observabilidade
 
+<!-- @lang: go, node, python -->
+
 ## Objetivo
 Garantir rastreabilidade, diagnostico e visibilidade operacional em producao.
 

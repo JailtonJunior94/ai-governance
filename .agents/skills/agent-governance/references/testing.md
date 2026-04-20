@@ -1,5 +1,7 @@
 # Testes
 
+<!-- @lang: all -->
+
 - Rule ID: R-TEST-001
 - Severidade: hard para correção e determinismo, guideline para estilo
 

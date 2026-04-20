@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Verifica cobertura de requisitos: todos os RF-nn/REQ-nn do PRD devem aparecer em tasks.md.
+# Verifica cobertura de requisitos: todos os RF-nn/REQ-nn/RNF-nn do PRD devem aparecer em tasks.md.
+# Inclui requisitos funcionais (RF/REQ) e nao-funcionais (RNF).
 #
 # Uso:
 #   bash scripts/check-rf-coverage.sh <prd.md> <tasks.md>
@@ -29,14 +30,20 @@ for f in "$prd_file" "$tasks_file"; do
   fi
 done
 
-# Extrair todos os RF-nn / REQ-nn do PRD (case-insensitive, uppercase normalizado)
-all_ids="$(grep -Eohi '(RF-?[0-9]+|REQ-?[0-9]+)' "$prd_file" 2>/dev/null \
+# Extrair todos os RF-nn / REQ-nn / RNF-nn do PRD (case-insensitive, uppercase normalizado)
+all_ids="$(grep -Eohi '(RF-?[0-9]+|REQ-?[0-9]+|RNF-?[0-9]+)' "$prd_file" 2>/dev/null \
   | tr '[:lower:]' '[:upper:]' | sort -u || true)"
 
 if [[ -z "$all_ids" ]]; then
-  echo "OK: nenhum requisito RF-nn/REQ-nn encontrado em $prd_file (sem cobertura a verificar)"
+  echo "OK: nenhum requisito RF-nn/REQ-nn/RNF-nn encontrado em $prd_file (sem cobertura a verificar)"
   exit 0
 fi
+
+# Classificar requisitos por tipo para relatorio detalhado
+rf_total=0
+rnf_total=0
+rf_missing=0
+rnf_missing=0
 
 total=0
 missing=0
@@ -45,14 +52,33 @@ missing_ids=()
 while IFS= read -r req_id; do
   [[ -n "$req_id" ]] || continue
   total=$((total + 1))
+
+  # Classificar tipo
+  if echo "$req_id" | grep -Eq '^RNF'; then
+    rnf_total=$((rnf_total + 1))
+  else
+    rf_total=$((rf_total + 1))
+  fi
+
   if ! grep -Fiq "$req_id" "$tasks_file" 2>/dev/null; then
     missing=$((missing + 1))
     missing_ids+=("$req_id")
+    if echo "$req_id" | grep -Eq '^RNF'; then
+      rnf_missing=$((rnf_missing + 1))
+    else
+      rf_missing=$((rf_missing + 1))
+    fi
   fi
 done <<< "$all_ids"
 
 if [[ "$missing" -gt 0 ]]; then
   echo "COBERTURA INCOMPLETA: $missing de $total requisito(s) ausente(s) em $tasks_file" >&2
+  if [[ "$rf_missing" -gt 0 ]]; then
+    echo "  Funcionais (RF/REQ) ausentes: $rf_missing de $rf_total" >&2
+  fi
+  if [[ "$rnf_missing" -gt 0 ]]; then
+    echo "  Nao-funcionais (RNF) ausentes: $rnf_missing de $rnf_total" >&2
+  fi
   for id in "${missing_ids[@]}"; do
     echo "  - $id" >&2
   done
@@ -62,5 +88,5 @@ if [[ "$missing" -gt 0 ]]; then
   exit 1
 fi
 
-echo "OK: todos os $total requisito(s) de $prd_file cobertos em $tasks_file"
+echo "OK: todos os $total requisito(s) de $prd_file cobertos em $tasks_file (RF: $rf_total, RNF: $rnf_total)"
 exit 0

@@ -7,6 +7,28 @@ e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Added
+- Skill `execute-task-all` para execucao sequencial de todas as tasks elegiveis de um `tasks/prd-<feature-slug>/tasks.md` com fluxo completo (execute-task, review, bugfix, evidencias)
+- Script `scripts/loop-execute-tasks.sh`: orquestrador externo de loop de tasks, invocando o CLI de IA como processo separado por task (contexto limpo por iteracao)
+- Utilitarios `scripts/lib/loop-report-generator.sh`, `report-parser.sh`, `task-selector.sh` e `tool-adapters.sh` para suporte ao loop de execucao
+- Script `scripts/collect-efficacy-metrics.sh` para coleta de metricas de eficacia das execucoes
+- Script `scripts/trace-requirements.sh` para rastreamento de requisitos em artefatos de tarefa
+- Workflow `.github/workflows/governance-check.yml` para verificacao de governanca em CI
+- Referencia `enforcement-fallback.md` com politica de fallback para enforcement entre ferramentas
+- Diretorio `i18n/` com suporte a internacionalizacao (en e demais locais)
+- Fixtures de teste para `go-domain`, `node-domain`, `python-domain` e `loop-tasks`
+- Testes `test-loop-execute-tasks.sh`, `test-codex-e2e.sh`, `test-copilot-e2e.sh`, `test-harness-execution.sh` e `test-mutation.bats`
+- `tests/lib/` com utilitarios compartilhados de teste
+- `README-agent.md` com documentacao adicional voltada a agentes
+
+### Changed
+- Skills `agent-governance`, `go-implementation`, `node-implementation` e `python-implementation` atualizadas
+- Referencias de governanca atualizadas: `ddd`, `enforcement-matrix`, `error-handling`, `messaging`, `observability`, `persistence`, `security-app`, `security`, `shared-architecture`, `shared-lifecycle`, `shared-patterns`, `shared-testing`, `testing`
+- Template de relatorio de execucao de task (`task-execution-report-template.md`) atualizado
+- Workflow de testes (`.github/workflows/test.yml`) atualizado
+- Scripts `validate-bugfix-evidence.sh`, `validate-refactor-evidence.sh`, `validate-task-evidence.sh` e `check-rf-coverage.sh` atualizados
+- `README.md` e `.gitignore` atualizados
+
 ## [1.0.1] - 2026-04-19
 
 ### Added

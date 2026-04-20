@@ -1,5 +1,7 @@
 # Principios de Arquitetura (Cross-Linguagem)
 
+<!-- @lang: all -->
+
 ## Diretrizes
 - Modulos/packages coesos com dependencias direcionadas.
 - Regras de dominio fora de handlers, controllers e infraestrutura.

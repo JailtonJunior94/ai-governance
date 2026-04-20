@@ -1,5 +1,7 @@
 # Segurança
 
+<!-- @lang: all -->
+
 - Rule ID: R-SEC-001
 - Severidade: hard
 - Escopo: Todo código, configuração, logs e execução.

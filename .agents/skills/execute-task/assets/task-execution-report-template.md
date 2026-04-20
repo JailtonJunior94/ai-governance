@@ -21,6 +21,11 @@
 - Lint: pass | fail | blocked
 - Veredito do Revisor: APPROVED | APPROVED_WITH_REMARKS | REJECTED | BLOCKED
 
+## Rastreabilidade de Requisitos
+| RF-ID | Evidencia | Documento:Linha |
+|-------|-----------|-----------------|
+| RF-NN | [descricao da evidencia que comprova o requisito] | [documento.md:NN ou n/a] |
+
 ## Suposições
 - [suposição]
 

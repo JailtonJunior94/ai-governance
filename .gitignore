@@ -20,3 +20,6 @@ Thumbs.db
 
 # Tasks
 tasks/
+
+# bats-core (instalado localmente por tests/lib/install-bats.sh)
+tests/lib/bats-core/

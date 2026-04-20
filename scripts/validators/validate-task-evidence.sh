@@ -38,6 +38,49 @@ require_heading() {
   fi
 }
 
+# Validacao semantica: verifica que apos um heading existe conteudo real
+# (pelo menos 1 linha nao-vazia que nao seja apenas "Nenhum", "N/A", "n/a", "-" ou heading)
+require_content_after_heading() {
+  local heading_pattern="$1"
+  local label="$2"
+
+  local heading_line
+  heading_line="$(grep -Ein "^#+[[:space:]]+$heading_pattern" "$report_file" | head -1 | cut -d: -f1)"
+  if [[ -z "$heading_line" ]]; then
+    return # heading ausente — ja capturado por require_heading
+  fi
+
+  local total_lines
+  total_lines="$(wc -l < "$report_file" | tr -d ' ')"
+  local next_start=$((heading_line + 1))
+  if [[ "$next_start" -gt "$total_lines" ]]; then
+    echo "FALTANDO: conteudo apos $label (secao vazia)"
+    missing=1
+    return
+  fi
+
+  # Extrair linhas ate o proximo heading ou fim do arquivo
+  local has_content=0
+  while IFS= read -r line; do
+    # Parar no proximo heading
+    if echo "$line" | grep -Eq '^#+[[:space:]]'; then
+      break
+    fi
+    # Ignorar linhas vazias e placeholders
+    local trimmed
+    trimmed="$(echo "$line" | sed 's/^[[:space:]-]*//' | sed 's/[[:space:]]*$//')"
+    if [[ -n "$trimmed" ]] && ! echo "$trimmed" | grep -Eiq '^(nenhum[a.]?|n/?a|-)$'; then
+      has_content=1
+      break
+    fi
+  done < <(tail -n +"$next_start" "$report_file")
+
+  if [[ "$has_content" -eq 0 ]]; then
+    echo "FALTANDO: conteudo real apos $label (secao vazia ou apenas placeholders)"
+    missing=1
+  fi
+}
+
 # Contexto carregado (PRD e TechSpec) — exigir como heading Markdown
 require_heading "contexto carregado" "seção Contexto Carregado"
 require_pattern "PRD[[:space:]]*:" "referência ao PRD consultado"
@@ -49,6 +92,11 @@ require_heading "arquivos alterados" "seção Arquivos Alterados"
 require_heading "resultados de validac" "seção Resultados de Validação"
 require_heading "suposic" "seção Suposições"
 require_heading "riscos residuais" "seção Riscos Residuais"
+
+# Validacao semantica: secoes criticas devem ter conteudo real
+require_content_after_heading "comandos executados" "seção Comandos Executados"
+require_content_after_heading "arquivos alterados" "seção Arquivos Alterados"
+require_content_after_heading "resultados de validac" "seção Resultados de Validação"
 
 # Exigir um estado terminal canônico
 if ! grep -Eiq "estado[[:space:]]*:[[:space:]]*(blocked|failed|done)" "$report_file"; then

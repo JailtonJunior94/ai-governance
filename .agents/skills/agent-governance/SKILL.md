@@ -13,15 +13,41 @@ description: Orquestra regras de governanca, DDD, tratamento de erros, seguranca
 2. Identificar se a tarefa afeta modelagem de dominio, fluxo de erro, seguranca, validacao ou testes.
 3. Aplicar a menor mudanca segura que preserve arquitetura, convencoes e fronteiras existentes.
 
+**Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
+| Arquivo | Descricao |
+|---------|-----------|
+| `references/ddd.md` | Entidades, value objects, aggregate roots, transicoes de estado, regras de aplicacao |
+| `references/error-handling.md` | Wrapping, sentinel errors, tipos customizados, propagacao de erros |
+| `references/security.md` | Filesystem, subprocessos, segredos, runtime, input externo, dependencias |
+| `references/security-app.md` | Autenticacao, autorizacao, validacao, rate limiting, CORS |
+| `references/testing.md` | Estrategia de testes unitarios e integracao, mocking, cobertura |
+| `references/shared-lifecycle.md` | Inicializacao, shutdown, signal handling, drain — principios universais |
+| `references/shared-testing.md` | Principios de teste cross-linguagem: determinismo, testcontainers |
+| `references/shared-architecture.md` | DI, organizacao de modulos, sinais de excesso — cross-linguagem |
+| `references/shared-patterns.md` | Repository, Factory, DI, Value Objects, Error Handling — cross-linguagem |
+| `references/persistence.md` | Repositories, transactions, migrations, connection management |
+| `references/observability.md` | Logging, tracing, metricas, health checks |
+| `references/messaging.md` | Eventos, filas, topicos, outbox pattern, idempotencia |
+| `references/enforcement-matrix.md` | Capacidades por ferramenta (Claude, Gemini, Codex, Copilot) |
+| `references/enforcement-fallback.md` | Procedimentos compensatorios para ferramentas sem hooks |
+| `references/bug-schema.json` | Schema JSON canonico para formato de bugs |
+
 **Etapa 2: Carregar referencias sob demanda**
 1. Ler `references/ddd.md` quando a tarefa alterar entidades, value objects, aggregate roots, transicoes de estado ou regras de aplicacao.
 2. Ler `references/error-handling.md` quando a tarefa criar, propagar, encapsular, comparar ou apresentar erros.
 3. Ler `references/security.md` quando a tarefa envolver filesystem, subprocessos, segredos, configuracao, runtime, input externo ou dependencias.
-4. Ler `references/testing.md` quando a tarefa alterar comportamento, validadores, runtime, adapters, persistencia ou gates de validacao.
-5. Ler `references/shared-lifecycle.md` quando a tarefa envolver inicializacao, shutdown, signal handling ou drain de conexoes — principios universais aplicaveis a qualquer linguagem.
-6. Ler `references/shared-testing.md` quando a tarefa envolver estrategia de testes cross-linguagem — principios de unit/integration test aplicaveis a qualquer stack.
-7. Ler `references/shared-architecture.md` quando a tarefa envolver decisoes arquiteturais cross-linguagem — DI, organizacao de modulos, sinais de excesso.
-8. Ler `references/shared-patterns.md` quando a tarefa envolver patterns recorrentes cross-linguagem — Repository, Factory, DI, Value Objects, Error Handling.
+4. Ler `references/security-app.md` quando a tarefa envolver autenticacao, autorizacao, validacao de input, rate limiting, CORS, auditoria de dependencias ou seguranca de endpoints HTTP.
+5. Ler `references/testing.md` quando a tarefa alterar comportamento, validadores, runtime, adapters, persistencia ou gates de validacao.
+6. Ler `references/shared-lifecycle.md` quando a tarefa envolver inicializacao, shutdown, signal handling ou drain de conexoes — principios universais aplicaveis a qualquer linguagem.
+7. Ler `references/shared-testing.md` quando a tarefa envolver estrategia de testes cross-linguagem — principios de unit/integration test aplicaveis a qualquer stack.
+8. Ler `references/shared-architecture.md` quando a tarefa envolver decisoes arquiteturais cross-linguagem — DI, organizacao de modulos, sinais de excesso.
+9. Ler `references/shared-patterns.md` quando a tarefa envolver patterns recorrentes cross-linguagem — Repository, Factory, DI, Value Objects, Error Handling.
+10. Ler `references/persistence.md` quando a tarefa envolver repositories, transactions, migrations, connection pooling ou queries parametrizadas.
+11. Ler `references/observability.md` quando a tarefa envolver logging estruturado, distributed tracing, metricas, histogramas ou health checks.
+12. Ler `references/messaging.md` quando a tarefa envolver producao ou consumo de eventos, filas, topicos, outbox pattern ou idempotencia de consumers.
+13. Ler `references/enforcement-matrix.md` quando a tarefa envolver analise de capacidades por ferramenta, comparacao de enforcement ou decisoes de adaptador.
+14. Ler `references/enforcement-fallback.md` quando a tarefa envolver uso de Codex, Gemini CLI ou Copilot CLI, ou quando for necessario definir procedimentos compensatorios para ferramentas sem hooks.
+15. Ler `references/bug-schema.json` quando a tarefa envolver interface review-bugfix, formato canonico de bugs ou validacao de schema de achados.
 
 **Etapa 3: Executar com controle**
 1. Preservar comportamento publico existente, salvo quando a mudanca explicitar a alteracao.

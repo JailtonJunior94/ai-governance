@@ -69,10 +69,53 @@ require_heading() {
   fi
 }
 
+# Validacao semantica: verifica que apos um heading existe conteudo real
+require_content_after_heading() {
+  local heading_pattern="$1"
+  local label="$2"
+
+  local heading_line
+  heading_line="$(grep -Ein "^#+[[:space:]]+$heading_pattern" "$report_file" | head -1 | cut -d: -f1)"
+  if [[ -z "$heading_line" ]]; then
+    return
+  fi
+
+  local total_lines
+  total_lines="$(wc -l < "$report_file" | tr -d ' ')"
+  local next_start=$((heading_line + 1))
+  if [[ "$next_start" -gt "$total_lines" ]]; then
+    echo "FALTANDO: conteudo apos $label (secao vazia)"
+    missing=1
+    return
+  fi
+
+  local has_content=0
+  while IFS= read -r line; do
+    if echo "$line" | grep -Eq '^#+[[:space:]]'; then
+      break
+    fi
+    local trimmed
+    trimmed="$(echo "$line" | sed 's/^[[:space:]-]*//' | sed 's/[[:space:]]*$//')"
+    if [[ -n "$trimmed" ]] && ! echo "$trimmed" | grep -Eiq '^(nenhum[a.]?|n/?a|-)$'; then
+      has_content=1
+      break
+    fi
+  done < <(tail -n +"$next_start" "$report_file")
+
+  if [[ "$has_content" -eq 0 ]]; then
+    echo "FALTANDO: conteudo real apos $label (secao vazia ou apenas placeholders)"
+    missing=1
+  fi
+}
+
 # Secoes obrigatorias
 require_heading "bugs"                  "seção Bugs"
 require_heading "comandos executados"   "seção Comandos Executados"
 require_heading "riscos residuais"      "seção Riscos Residuais"
+
+# Validacao semantica: secoes criticas devem ter conteudo real
+require_content_after_heading "bugs" "seção Bugs"
+require_content_after_heading "comandos executados" "seção Comandos Executados"
 
 # Cada entrada de bug deve ter estado canonico
 require_pattern "Estado[[:space:]]*:[[:space:]]*(fixed|blocked|skipped|failed)" \

@@ -1,0 +1,239 @@
+name: Governance Check
+
+# Workflow reutilizavel para projetos consumidores.
+# Uso no projeto-alvo:
+#
+#   jobs:
+#     governance:
+#       uses: <owner>/ai-governance/.github/workflows/governance-check.yml@main
+#       with:
+#         langs: "go"
+#
+# Ou com trigger local:
+#
+#   on: pull_request
+#   jobs:
+#     governance:
+#       uses: <owner>/ai-governance/.github/workflows/governance-check.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      langs:
+        description: "Linguagens a validar (go, node, python, all)"
+        required: false
+        type: string
+        default: "all"
+      token-budget:
+        description: "Limite de tokens para budget gate"
+        required: false
+        type: number
+        default: 15000
+      validate-evidence:
+        description: "Validar execution reports encontrados"
+        required: false
+        type: boolean
+        default: true
+      check-spec-drift:
+        description: "Verificar spec drift em tasks/"
+        required: false
+        type: boolean
+        default: true
+      check-rf-coverage:
+        description: "Verificar cobertura de RF em tasks/"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  governance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify governance structure
+        run: |
+          echo "=== Verificando estrutura de governanca ==="
+          errors=0
+
+          if [[ ! -f "AGENTS.md" ]]; then
+            echo "ERRO: AGENTS.md ausente"
+            errors=$((errors + 1))
+          else
+            echo "OK: AGENTS.md presente"
+          fi
+
+          if [[ ! -d ".agents/skills" ]]; then
+            echo "ERRO: .agents/skills/ ausente"
+            errors=$((errors + 1))
+          else
+            echo "OK: .agents/skills/ presente"
+          fi
+
+          if [[ ! -f ".agents/skills/agent-governance/SKILL.md" ]]; then
+            echo "ERRO: agent-governance/SKILL.md ausente"
+            errors=$((errors + 1))
+          else
+            echo "OK: agent-governance/SKILL.md presente"
+          fi
+
+          if [[ "$errors" -gt 0 ]]; then
+            echo "FALHA: $errors erro(s) de estrutura"
+            exit 1
+          fi
+          echo "Estrutura de governanca validada."
+
+      - name: Verify language skills
+        run: |
+          echo "=== Verificando skills de linguagem ==="
+          LANGS="${{ inputs.langs }}"
+          errors=0
+
+          check_lang() {
+            local lang="$1"
+            local skill_dir=".agents/skills/${lang}-implementation"
+            if [[ -d "$skill_dir" ]] && [[ -f "$skill_dir/SKILL.md" ]]; then
+              echo "OK: $lang-implementation presente"
+            else
+              echo "ERRO: $lang-implementation ausente"
+              errors=$((errors + 1))
+            fi
+          }
+
+          if [[ "$LANGS" == "all" ]]; then
+            for lang in go node python; do
+              if [[ -d ".agents/skills/${lang}-implementation" ]]; then
+                check_lang "$lang"
+              fi
+            done
+          else
+            IFS=',' read -ra LANG_ARRAY <<< "$LANGS"
+            for lang in "${LANG_ARRAY[@]}"; do
+              check_lang "$(echo "$lang" | tr -d ' ')"
+            done
+          fi
+
+          if [[ "$errors" -gt 0 ]]; then
+            echo "FALHA: $errors skill(s) de linguagem ausente(s)"
+            exit 1
+          fi
+
+      - name: Governance lint
+        run: |
+          echo "=== Lint de governanca ==="
+          errors=0
+
+          # Verificar frontmatter de SKILL.md
+          while IFS= read -r skill_file; do
+            [[ -n "$skill_file" ]] || continue
+            if ! head -1 "$skill_file" | grep -q '^---'; then
+              echo "ERRO: frontmatter ausente em $skill_file"
+              errors=$((errors + 1))
+            fi
+          done < <(find .agents/skills -name 'SKILL.md' 2>/dev/null)
+
+          if [[ "$errors" -gt 0 ]]; then
+            echo "FALHA: $errors erro(s) de lint"
+            exit 1
+          fi
+          echo "Lint de governanca passou."
+
+      - name: Token budget gate
+        run: |
+          echo "=== Budget gate ==="
+          MAX_TOKENS="${{ inputs.token-budget }}"
+          total_tokens=0
+
+          for f in AGENTS.md .agents/skills/agent-governance/SKILL.md; do
+            if [[ -f "$f" ]]; then
+              words=$(wc -w < "$f")
+              tokens=$((words * 4 / 3))
+              total_tokens=$((total_tokens + tokens))
+            fi
+          done
+
+          echo "Tokens estimados no contexto base: $total_tokens (limite: $MAX_TOKENS)"
+          if [[ "$total_tokens" -gt "$MAX_TOKENS" ]]; then
+            echo "FALHA: budget excedido"
+            exit 1
+          fi
+          echo "Budget dentro do limite."
+
+      - name: Check spec drift
+        if: inputs.check-spec-drift
+        run: |
+          echo "=== Spec drift ==="
+          drift_found=0
+
+          for tasks_file in $(find . -path '*/tasks/*/tasks.md' 2>/dev/null); do
+            tasks_dir="$(dirname "$tasks_file")"
+            if [[ -f "$tasks_dir/prd.md" ]]; then
+              # Verificar se ha hash de spec
+              if grep -q 'spec-hash-prd' "$tasks_file" 2>/dev/null; then
+                echo "Verificando drift em $tasks_file..."
+                # Extrair hash esperado
+                expected_hash="$(grep 'spec-hash-prd' "$tasks_file" | sed 's/.*spec-hash-prd: //' | sed 's/ .*//' | head -1)"
+                if command -v sha256sum >/dev/null 2>&1; then
+                  actual_hash="$(sha256sum "$tasks_dir/prd.md" | cut -c1-8)"
+                elif command -v shasum >/dev/null 2>&1; then
+                  actual_hash="$(shasum -a 256 "$tasks_dir/prd.md" | cut -c1-8)"
+                else
+                  echo "SKIP: sem sha256sum/shasum"
+                  continue
+                fi
+                if [[ "$expected_hash" != "$actual_hash" ]]; then
+                  echo "DRIFT: $tasks_file (hash esperado: $expected_hash, atual: $actual_hash)"
+                  drift_found=1
+                else
+                  echo "OK: $tasks_file sem drift"
+                fi
+              fi
+            fi
+          done
+
+          if [[ "$drift_found" -gt 0 ]]; then
+            echo "ATENCAO: spec drift detectado (nao bloqueante)"
+          fi
+
+      - name: Check RF coverage
+        if: inputs.check-rf-coverage
+        run: |
+          echo "=== Cobertura de RF ==="
+          for tasks_file in $(find . -path '*/tasks/*/tasks.md' 2>/dev/null); do
+            tasks_dir="$(dirname "$tasks_file")"
+            if [[ -f "$tasks_dir/prd.md" ]]; then
+              echo "Verificando RF em $tasks_file..."
+              # Extrair RFs do PRD
+              rf_count=$(grep -Eohic '(RF-?[0-9]+|REQ-?[0-9]+|RNF-?[0-9]+)' "$tasks_dir/prd.md" 2>/dev/null | tr '[:upper:]' '[:lower:]' | sort -u | wc -l || echo 0)
+              if [[ "$rf_count" -gt 0 ]]; then
+                covered=$(grep -Eohic '(RF-?[0-9]+|REQ-?[0-9]+|RNF-?[0-9]+)' "$tasks_file" 2>/dev/null | tr '[:upper:]' '[:lower:]' | sort -u | wc -l || echo 0)
+                echo "  PRD: $rf_count requisito(s), Tasks: $covered coberto(s)"
+              fi
+            fi
+          done
+
+      - name: Validate evidence reports
+        if: inputs.validate-evidence
+        run: |
+          echo "=== Validacao de evidencia ==="
+          reports_found=0
+          reports_valid=0
+          reports_invalid=0
+
+          for report in $(find . -name '*_execution_report.md' -o -name 'bugfix_report.md' 2>/dev/null); do
+            reports_found=$((reports_found + 1))
+            # Verificar secoes obrigatorias minimas
+            has_context=$(grep -c 'Contexto Carregado\|Context' "$report" 2>/dev/null || echo 0)
+            has_commands=$(grep -c 'Comandos Executados\|Commands' "$report" 2>/dev/null || echo 0)
+            has_validation=$(grep -c 'Resultados de Validac\|Validation' "$report" 2>/dev/null || echo 0)
+
+            if [[ "$has_context" -gt 0 ]] && [[ "$has_commands" -gt 0 ]] && [[ "$has_validation" -gt 0 ]]; then
+              echo "OK: $report"
+              reports_valid=$((reports_valid + 1))
+            else
+              echo "WARN: $report (secoes ausentes)"
+              reports_invalid=$((reports_invalid + 1))
+            fi
+          done
+
+          echo "Reports: $reports_found encontrado(s), $reports_valid valido(s), $reports_invalid com aviso(s)"

@@ -1,5 +1,7 @@
 # Modelagem de Domínio
 
+<!-- @lang: all -->
+
 - Rule ID: R-DDD-001
 - Severidade: hard
 - Escopo: camadas de domínio e aplicação.

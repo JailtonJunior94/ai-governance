@@ -178,6 +178,46 @@ else
   pass "task-evidence: rejeitou relatorio sem veredito"
 fi
 
+# 1e. Relatorio com secoes vazias (apenas placeholders) deve falhar
+cat > "$tmpdir/task-empty-sections.md" <<'EOF'
+# Contexto Carregado
+
+PRD: tasks/prd-test/prd.md
+TechSpec: tasks/prd-test/techspec.md
+
+# Comandos Executados
+
+Nenhum.
+
+# Arquivos Alterados
+
+Nenhum.
+
+# Resultados de Validacao
+
+Testes: pass
+Lint: pass
+RF-01 validado.
+
+# Suposicoes
+
+Nenhuma.
+
+# Riscos Residuais
+
+Nenhum.
+
+Estado: done
+
+Veredito do Revisor: APPROVED
+EOF
+
+if bash "$task_validator" "$tmpdir/task-empty-sections.md" > /dev/null 2>&1; then
+  fail "task-evidence: aceitou relatorio com Comandos Executados vazio"
+else
+  pass "task-evidence: rejeitou relatorio com Comandos Executados vazio"
+fi
+
 # ========== 2. validate-bugfix-evidence.sh ==========
 echo "=== Bugfix evidence validator ==="
 
@@ -238,7 +278,36 @@ else
   pass "bugfix-evidence: rejeitou relatorio sem causa raiz"
 fi
 
-# 2c. Rastreabilidade RF via --rf
+# 2c. Relatorio com Bugs vazio (apenas placeholder)
+cat > "$tmpdir/bugfix-empty-bugs.md" <<'EOF'
+# Relatorio de Bugfix
+
+- Corrigidos: 1
+
+## Bugs
+
+Nenhum.
+
+## Comandos Executados
+- go test ./internal/auth/... -> PASS
+
+## Riscos Residuais
+- Nenhum
+
+- Estado: fixed
+- Causa raiz: nil pointer
+- Teste de regressao: TestFoo
+- Validacao: pass
+- Estado final: done
+EOF
+
+if bash "$bugfix_validator" "$tmpdir/bugfix-empty-bugs.md" > /dev/null 2>&1; then
+  fail "bugfix-evidence: aceitou relatorio com secao Bugs vazia"
+else
+  pass "bugfix-evidence: rejeitou relatorio com secao Bugs vazia"
+fi
+
+# 2d. Rastreabilidade RF via --rf
 cat > "$tmpdir/bugfix-rf.md" <<'EOF'
 # Relatorio de Bugfix
 
@@ -367,7 +436,37 @@ else
   fail "refactor-evidence: rejeitou execution com veredito"
 fi
 
-# 3d. Relatorio sem modo deve falhar
+# 3d. Relatorio com secao Mudancas vazia deve falhar
+cat > "$tmpdir/refactor-empty-changes.md" <<'EOF'
+## Escopo
+- Modo: advisory
+- Estado: done
+
+## Invariantes Preservadas
+- Contrato publico mantido
+
+## Mudancas Propostas ou Aplicadas
+
+Nenhum.
+
+## Comandos Executados
+- go test ./internal/order/... -> PASS
+
+## Resultados de Validacao
+- Testes: pass
+- Lint: pass
+
+## Riscos Residuais
+- Nenhum
+EOF
+
+if bash "$refactor_validator" "$tmpdir/refactor-empty-changes.md" > /dev/null 2>&1; then
+  fail "refactor-evidence: aceitou relatorio com Mudancas vazia"
+else
+  pass "refactor-evidence: rejeitou relatorio com Mudancas vazia"
+fi
+
+# 3e. Relatorio sem modo deve falhar
 cat > "$tmpdir/refactor-no-mode.md" <<'EOF'
 ## Escopo
 - Estado: done

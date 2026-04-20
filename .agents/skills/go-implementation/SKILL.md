@@ -29,6 +29,29 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 - **Functional Options:** Usar `func With*(v) Option` quando o objeto tiver muitos campos opcionais. Preferir sobre builder fluente: `func NewServer(addr string, opts ...ServerOption) *Server`. Cada option e uma `func(*T)` que modifica o alvo.
 - **Adapter:** Usar struct que implementa interface do consumidor e delega para tipo externo quando integrar dependencia incompativel. Repository concreto e o exemplo mais comum.
 
+**Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
+| Arquivo | Descricao |
+|---------|-----------|
+| `references/architecture.md` | Layouts de diretorio para HTTP/gRPC, worker, monolito modular, CLI |
+| `references/interfaces.md` | Quando introduzir, adapter patterns, design orientado ao consumidor |
+| `references/generics.md` | Parametros de tipo, constraints, componentes reutilizaveis |
+| `references/concurrency.md` | Goroutines, channels, cancelamento, worker pools, sincronizacao |
+| `references/patterns-structural.md` | Decorator, Facade — patterns alem dos inline |
+| `references/patterns-behavioral.md` | Strategy, chain of responsibility, observer, state machines |
+| `references/api.md` | Handlers HTTP/gRPC, middlewares, DTOs, serializacao |
+| `references/persistence.md` | Repositories, transactions, migrations, queries, connection management |
+| `references/configuration.md` | Variaveis de ambiente, config files, inicializacao de dependencias |
+| `references/resilience.md` | Retries, circuit breakers, timeouts, fallbacks |
+| `references/messaging.md` | Producao/consumo de mensagens, outbox pattern, idempotencia |
+| `references/security.md` | Autenticacao, autorizacao, validacao de input, CORS, segredos |
+| `references/observability.md` | Logging estruturado, tracing, metricas |
+| `references/testing.md` | Suite-based testing, fixtures, mockery, cobertura |
+| `references/build.md` | Dockerfile, Makefile, CI pipeline, build flags |
+| `references/graceful-lifecycle.md` | Init ordenado, shutdown gracioso, signal handlers, goroutine drains |
+| `references/examples-domain-flow.md` | Esqueleto end-to-end: Entity, Service, Handler, Test |
+| `references/examples-testing.md` | Fuzz tests, table-driven tests, invariant constructors |
+| `references/examples-infrastructure.md` | Paginacao, API versioning, graceful shutdown |
+
 **Etapa 2: Selecionar apenas o contexto necessario**
 1. Ler `references/interfaces.md` quando a tarefa introduzir, remover ou remodelar interfaces, construtores ou fronteiras de dependencia.
 2. Ler `references/generics.md` quando a tarefa introduzir ou alterar parametros de tipo, constraints ou componentes reutilizaveis com generics.

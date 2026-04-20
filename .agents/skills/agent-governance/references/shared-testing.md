@@ -1,5 +1,7 @@
 # Principios de Teste (Cross-Linguagem)
 
+<!-- @lang: all -->
+
 ## Unit Tests (obrigatorio)
 - Todo comportamento de dominio, use case e logica pura deve ter unit test.
 - Nomear pelo cenario, nao pelo metodo.

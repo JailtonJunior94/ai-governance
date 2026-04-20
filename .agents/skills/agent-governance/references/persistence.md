@@ -1,5 +1,7 @@
 # Persistencia
 
+<!-- @lang: go, node, python -->
+
 ## Objetivo
 Manter acesso a dados explicito, testavel e isolado do dominio.
 

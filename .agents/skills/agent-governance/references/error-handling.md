@@ -1,5 +1,7 @@
 # Tratamento de Erros
 
+<!-- @lang: go, node, python -->
+
 - Rule ID: R-ERR-001
 - Severidade: hard
 - Escopo: Todo codigo com criacao, wrapping, propagacao e apresentacao de erros.

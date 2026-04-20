@@ -20,6 +20,27 @@ description: Implementa alteracoes em codigo Node/TypeScript usando governanca b
 - **Dependency Injection:** Preferir injecao via construtor sobre containers automaticos, salvo quando o projeto ja adotar um container (tsyringe, inversify, NestJS IoC). Depender de interfaces/types em fronteiras de IO.
 - **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL. Nao retornar entidades ORM diretamente — mapear para entidades de dominio.
 
+**Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
+| Arquivo | Descricao |
+|---------|-----------|
+| `references/architecture.md` | Principios de arquitetura compartilhados |
+| `references/conventions.md` | Estrutura de projeto, organizacao de modulos, padroes de importacao |
+| `references/testing.md` | Jest/Vitest, parametrized tests, mocking, assercoes async |
+| `references/api.md` | Handlers HTTP, middlewares, DTOs, validacao de request |
+| `references/patterns.md` | Strategy, composicao vs heranca, organizacao de modulos |
+| `references/concurrency.md` | Promises, worker threads, streams, event loop |
+| `references/resilience.md` | Retries, circuit breakers, timeouts, health checks |
+| `references/build.md` | Dockerfile, CI pipeline, bundling, package managers |
+| `references/graceful-lifecycle.md` | Shutdown gracioso, SIGTERM/SIGINT, drain de conexoes HTTP |
+| `references/configuration.md` | Variaveis de ambiente, inicializacao de dependencias |
+| `references/persistence.md` | ORM mapping, repositories, transactions, migrations |
+| `references/observability.md` | Logging, tracing, metricas |
+| `references/security.md` | Autenticacao, autorizacao, validacao, rate limiting, CORS |
+| `references/messaging.md` | Producao/consumo de mensagens, eventos, filas, idempotencia |
+| `references/examples-domain-flow.md` | Esqueleto end-to-end com jest/vitest mocks |
+| `references/examples-testing.md` | Parametrized tests, mock factories, DTO validation |
+| `references/examples-infrastructure.md` | Paginacao, API versioning |
+
 **Etapa 2: Selecionar apenas o contexto necessario**
 1. Ler `references/conventions.md` quando a tarefa envolver estrutura de projeto, organizacao de modulos ou padroes de importacao.
 2. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, mocking ou cobertura.

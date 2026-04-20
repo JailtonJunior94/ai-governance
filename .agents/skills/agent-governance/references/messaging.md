@@ -1,5 +1,7 @@
 # Messaging e Eventos
 
+<!-- @lang: all -->
+
 ## Objetivo
 Manter comunicacao assincrona confiavel, rastreavel e desacoplada do dominio.
 
