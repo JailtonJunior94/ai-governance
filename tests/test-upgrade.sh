@@ -8,6 +8,7 @@ TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$TESTS_DIR/.." && pwd)"
 UPGRADE_SCRIPT="$ROOT_DIR/upgrade.sh"
 INSTALL_SCRIPT="$ROOT_DIR/install.sh"
+GOVERNANCE_GENERATOR="$ROOT_DIR/.agents/skills/analyze-project/scripts/generate-governance.sh"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -23,6 +24,18 @@ fail() {
   echo "FAIL  $1"
   FAILED=$((FAILED + 1))
 }
+
+extract_schema_version() {
+  local generator_file="${1:-$GOVERNANCE_GENERATOR}"
+  grep -o 'GOVERNANCE_SCHEMA_VERSION="[^"]*"' "$generator_file" 2>/dev/null | head -1 | sed 's/.*="//;s/"//'
+}
+
+CURRENT_SCHEMA_VERSION="$(extract_schema_version)"
+
+if [[ -z "$CURRENT_SCHEMA_VERSION" ]]; then
+  echo "ERRO: nao foi possivel determinar a schema version atual"
+  exit 1
+fi
 
 set_repo_version() {
   local repo_dir="$1"
@@ -297,15 +310,15 @@ echo "module schema-test" > "$SCHEMA_PROJECT/go.mod"
 
 LINK_MODE=copy bash "$INSTALL_SCRIPT" --tools claude --langs go "$SCHEMA_PROJECT" > /dev/null 2>&1
 
-# Verificar que AGENTS.md tem schema version 1.0.0
-if grep -q 'governance-schema: 1.0.0' "$SCHEMA_PROJECT/AGENTS.md" 2>/dev/null; then
-  pass "schema-bump: AGENTS.md contém schema 1.0.0 apos install"
+# Verificar que AGENTS.md tem a schema version atual
+if grep -q "governance-schema: $CURRENT_SCHEMA_VERSION" "$SCHEMA_PROJECT/AGENTS.md" 2>/dev/null; then
+  pass "schema-bump: AGENTS.md contém schema atual apos install"
 else
   fail "schema-bump: schema version ausente apos install"
 fi
 
 # Simular versao antiga no AGENTS.md do projeto (como se tivesse sido instalado com versao anterior)
-sed 's/governance-schema: 1.0.0/governance-schema: 0.9.0/' "$SCHEMA_PROJECT/AGENTS.md" > "$SCHEMA_PROJECT/AGENTS.md.tmp"
+sed "s/governance-schema: $CURRENT_SCHEMA_VERSION/governance-schema: 0.9.0/" "$SCHEMA_PROJECT/AGENTS.md" > "$SCHEMA_PROJECT/AGENTS.md.tmp"
 mv "$SCHEMA_PROJECT/AGENTS.md.tmp" "$SCHEMA_PROJECT/AGENTS.md"
 
 if grep -q 'governance-schema: 0.9.0' "$SCHEMA_PROJECT/AGENTS.md"; then
@@ -317,8 +330,8 @@ fi
 # Rodar upgrade — deve regenerar AGENTS.md com schema atualizado
 bash "$UPGRADE_SCRIPT" "$SCHEMA_PROJECT" > /dev/null 2>&1
 
-if grep -q 'governance-schema: 1.0.0' "$SCHEMA_PROJECT/AGENTS.md" 2>/dev/null; then
-  pass "schema-bump: AGENTS.md atualizado para 1.0.0 apos upgrade"
+if grep -q "governance-schema: $CURRENT_SCHEMA_VERSION" "$SCHEMA_PROJECT/AGENTS.md" 2>/dev/null; then
+  pass "schema-bump: AGENTS.md atualizado para schema atual apos upgrade"
 else
   fail "schema-bump: schema version nao atualizado apos upgrade"
 fi
@@ -353,7 +366,7 @@ with open('$CUSTOM_PROJECT/.claude/settings.local.json', 'w') as f:
 custom_settings="$(cat "$CUSTOM_PROJECT/.claude/settings.local.json")"
 
 # Simular schema antigo para forcar upgrade
-sed 's/governance-schema: 1.0.0/governance-schema: 0.8.0/' "$CUSTOM_PROJECT/AGENTS.md" > "$CUSTOM_PROJECT/AGENTS.md.tmp"
+sed "s/governance-schema: $CURRENT_SCHEMA_VERSION/governance-schema: 0.8.0/" "$CUSTOM_PROJECT/AGENTS.md" > "$CUSTOM_PROJECT/AGENTS.md.tmp"
 mv "$CUSTOM_PROJECT/AGENTS.md.tmp" "$CUSTOM_PROJECT/AGENTS.md"
 
 # Forcar divergencia em skill para triggerar upgrade
@@ -377,8 +390,8 @@ else
 fi
 
 # Verificar que AGENTS.md foi regenerado com schema atualizado
-if grep -q 'governance-schema: 1.0.0' "$CUSTOM_PROJECT/AGENTS.md" 2>/dev/null; then
-  pass "cross-version: AGENTS.md atualizado para schema 1.0.0"
+if grep -q "governance-schema: $CURRENT_SCHEMA_VERSION" "$CUSTOM_PROJECT/AGENTS.md" 2>/dev/null; then
+  pass "cross-version: AGENTS.md atualizado para schema atual"
 else
   fail "cross-version: AGENTS.md nao atualizado"
 fi
