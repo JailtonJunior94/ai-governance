@@ -1,4 +1,4 @@
-<!-- governance-schema: 1.0.0 -->
+<!-- governance-schema: 1.1.0 -->
 # Regras para Agentes de IA
 
 Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de analise, alteracao e validacao de codigo.
@@ -17,7 +17,6 @@ Frameworks detectados: FastAPI.
 ## Estrutura de Pastas
 
 ```
-.
 pyproject.toml
 src
 src/__init__.py

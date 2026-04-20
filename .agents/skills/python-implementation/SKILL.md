@@ -16,7 +16,7 @@ description: Implementa alteracoes em codigo Python usando governanca base, conv
 
 **Patterns frequentes (inline — evitar carregar patterns.md para estes)**
 - **Dependency Injection:** Preferir injecao via construtor ou parametros de funcao. Em FastAPI, usar `Depends()`. Depender de Protocol ou ABC em fronteiras de IO.
-- **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL. Nao retornar instancias ORM diretamente — mapear para entidades de dominio.
+- **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL.
 - **Dataclasses:** Preferir `dataclass` ou `attrs` para value objects e DTOs. Usar `frozen=True` para imutabilidade. Usar `__post_init__` para invariantes.
 
 **Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
@@ -44,12 +44,12 @@ description: Implementa alteracoes em codigo Python usando governanca base, conv
 1. Ler `references/conventions.md` quando a tarefa envolver estrutura de projeto, organizacao de modulos ou padroes de importacao.
 2. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, fixtures ou cobertura.
 3. Ler `references/api.md` quando a tarefa envolver handlers HTTP, middlewares, DTOs, validacao de request ou serializacao.
-4. Ler `references/patterns.md` **somente** quando a tarefa envolver strategy, composicao vs heranca ou organizacao de modulos nao cobertos inline. DI, Repository e Dataclasses ja estao definidos na secao "Patterns frequentes" acima e NAO devem motivar o carregamento deste arquivo — isso evita ~480 tokens redundantes.
+4. Ler `references/patterns.md` **somente** quando a tarefa envolver strategy, composicao vs heranca ou organizacao de modulos nao cobertos inline. DI, Repository e Dataclasses ja estao definidos acima.
 5. Ler `references/concurrency.md` quando a tarefa envolver asyncio, threading, multiprocessing, controle de concorrencia ou paralelismo.
 6. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou health checks.
 7. Ler `references/build.md` quando a tarefa envolver Dockerfile, pipeline de CI, packaging, gerenciamento de dependencias ou distribuicao.
-8. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end (entidade, use case, handler, teste). Para tarefas menores, usar o esqueleto inline: `Entity/dataclass -> UseCase(deps) -> Router(use_case) -> test com pytest fixtures`, sem carregar o arquivo completo.
-9. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de fixtures, parametrize, validacao de schemas ou assercoes async.
+8. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end. Para tarefas menores, usar o esqueleto inline `Entity/dataclass -> UseCase(deps) -> Router(use_case) -> test`.
+9. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de fixtures, parametrize ou validacao de schemas.
 10. Ler `references/examples-infrastructure.md` quando a tarefa precisar de exemplo de graceful shutdown, paginacao cursor-based ou versionamento de API.
 11. Ler `references/graceful-lifecycle.md` quando a tarefa envolver shutdown gracioso, signal handling (SIGTERM/SIGINT), drain de conexoes, cleanup de asyncio tasks ou encerramento de workers.
 12. Ler `references/configuration.md` quando a tarefa envolver carregamento de configuracao, variaveis de ambiente, pydantic-settings ou inicializacao de dependencias.

@@ -223,14 +223,14 @@ def tool_totals(tracked: set[Path] | None = None) -> dict[str, dict[str, int]]:
     gemini_files = [f for f in sorted((ROOT / ".gemini/commands").glob("*.toml")) if _keep(f)]
     tools["gemini"] = {"tokens_est": sum(int(file_metrics(f)["tokens_est"]) for f in gemini_files if f.exists())}
 
-    # Codex: only skills listed in .codex/config.toml
+    # Codex: only the enabled SKILL.md files are preloaded from config.
+    # References and assets are read on demand after the skill is selected.
     codex_tokens = 0
     for skill_name in codex_skills():
         skill_dir = ROOT / ".agents/skills" / skill_name
-        if skill_dir.is_dir():
-            for md in sorted(skill_dir.rglob("*.md")):
-                if _keep(md):
-                    codex_tokens += int(file_metrics(md)["tokens_est"])
+        skill_file = skill_dir / "SKILL.md"
+        if skill_file.is_file() and _keep(skill_file):
+            codex_tokens += int(file_metrics(skill_file)["tokens_est"])
     tools["codex"] = {"tokens_est": codex_tokens}
 
     # Copilot: .github/agents

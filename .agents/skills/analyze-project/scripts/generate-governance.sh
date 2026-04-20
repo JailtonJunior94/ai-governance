@@ -208,10 +208,42 @@ detect_primary_stack() {
 
 build_directory_tree() {
   local tree
-  tree="$(cd "$PROJECT_DIR" && find . \
-    \( -path './.git' -o -path './.agents' -o -path './.claude' -o -path './.codex' -o -path './.gemini' -o -path './node_modules' -o -path './vendor' -o -path './dist' -o -path './build' -o -path './bin' -o -path './target' -o -path './__pycache__' \) -prune \
-    -o \( -name '.gitkeep' -prune \) \
-    -o -print | sed 's#^\./##' | LC_ALL=C sort | awk 'NR <= 80 { print }')"
+  if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    tree="$(
+      git -C "$PROJECT_DIR" ls-files | python3 -c '
+import sys
+from pathlib import PurePosixPath
+
+excluded = {".agents", ".claude", ".codex", ".gemini", "node_modules", "vendor", "dist", "build", "bin", "target", "__pycache__"}
+entries = set()
+
+for raw in sys.stdin:
+    path = raw.strip()
+    if not path:
+        continue
+    pure = PurePosixPath(path)
+    if any(part in excluded for part in pure.parts):
+        continue
+    if pure.name == ".gitkeep" or pure.suffix == ".pyc":
+        continue
+
+    current = PurePosixPath()
+    for part in pure.parts[:-1]:
+        current = current / part
+        entries.add(str(current))
+    entries.add(path)
+
+for entry in sorted(entries)[:80]:
+    print(entry)
+'
+    )"
+  else
+    tree="$(cd "$PROJECT_DIR" && find . \
+      \( -path './.git' -o -path './.agents' -o -path './.claude' -o -path './.codex' -o -path './.gemini' -o -path './node_modules' -o -path './vendor' -o -path './dist' -o -path './build' -o -path './bin' -o -path './target' \) -prune \
+      -o \( -type d -name '__pycache__' -prune \) \
+      -o \( -name '.gitkeep' -o -name '*.pyc' \) -prune \
+      -o -print | sed 's#^\./##' | LC_ALL=C sort | awk 'NR <= 80 { print }')"
+  fi
 
   if [[ -z "$tree" ]]; then
     printf '.\n'
@@ -603,7 +635,7 @@ if [[ -z "${GOVERNANCE_PROFILE:-}" ]]; then
   fi
 fi
 
-GOVERNANCE_SCHEMA_VERSION="1.0.0"
+GOVERNANCE_SCHEMA_VERSION="1.1.0"
 
 _agents_content="$(render_template \
   "$SKILL_DIR/assets/agents-template.md" \

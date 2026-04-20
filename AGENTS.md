@@ -1,67 +1,40 @@
 # Regras para Agentes de IA
 
-Este diretório centraliza regras para uso com agentes de IA em tarefas reais de análise, alteração e validação de código.
+Este diretório centraliza regras para análise, alteração e validação de código com agentes de IA.
 
 ## Objetivo
 
-Use estas instruções para manter consistência, segurança e qualidade ao trabalhar com código, configuração, validação e evolução de sistemas.
+Use estas instruções para manter consistência, segurança e validação proporcional.
 
-## Modo de trabalho
+## Regras Gerais
 
 1. Entender o contexto antes de editar qualquer arquivo.
 2. Preferir a menor mudança segura que resolva a causa raiz.
-3. Preservar arquitetura, convenções e fronteiras já existentes no contexto analisado.
+3. Preservar arquitetura, convenções, fronteiras e comportamento público existente.
 4. Não introduzir abstrações, camadas ou dependências sem demanda concreta.
-5. Atualizar ou adicionar testes quando houver mudança de comportamento.
-6. Rodar validações proporcionais à mudança.
-7. Registrar bloqueios e suposições explicitamente quando o contexto estiver incompleto.
-
-## Diretrizes de Estrutura
-
-1. Priorize entendimento do código e do contexto atual antes de propor refatorações.
-2. Respeite padrões existentes de nomenclatura, organização e tratamento de erro.
-3. Defina estrutura simples, evolutiva e com defaults explícitos.
-4. Evite reescritas amplas quando uma alteração localizada resolver o problema.
-5. Estabeleça contratos, testes e comandos de validação cedo quando eles ainda não existirem.
-6. Considere risco de regressão como restrição principal.
-7. Evite overengineering disfarçado de arquitetura futura.
+5. Atualizar testes e rodar validações proporcionais quando houver risco de regressão.
+6. Registrar bloqueios e suposições quando o contexto estiver incompleto.
 
 ## Contrato de carga base
 
-Toda skill que altera código deve carregar, como primeiro passo, a seguinte base obrigatória — essa instrução é reforçada em cada SKILL.md como medida defensiva:
+Toda skill que altera código deve carregar como primeiro passo:
 
 1. Ler este `AGENTS.md`.
 2. Ler `.agents/skills/agent-governance/SKILL.md`.
 
-Essa base define governança para análise, alteração e validação, carregamento sob demanda de regras de DDD, erros, segurança e testes, e critérios mínimos de preservação arquitetural, risco e validação proporcional.
-
-Skills individuais devem declarar apenas cargas adicionais específicas ao seu contexto.
+A base cobre governança, referências sob demanda e critérios mínimos de risco e validação. Skills individuais devem declarar apenas cargas adicionais.
 
 ## Regras por Linguagem
 
-Para tarefas que alteram código Go, carregar também:
-
-- `.agents/skills/go-implementation/SKILL.md`
-
-Para tarefas que alteram código Node/TypeScript, carregar também:
-
-- `.agents/skills/node-implementation/SKILL.md`
-
-Para tarefas que alteram código Python, carregar também:
-
-- `.agents/skills/python-implementation/SKILL.md`
-
-Para tarefas de revisão ou refatoração incremental de design em Go guiadas por heurísticas de object calisthenics, carregar também:
-
-- `.agents/skills/object-calisthenics-go/SKILL.md`
-
-Para tarefas de correção de bugs com remediação e teste de regressão, carregar também:
-
-- `.agents/skills/bugfix/SKILL.md`
+- Go: `.agents/skills/go-implementation/SKILL.md`
+- Node/TypeScript: `.agents/skills/node-implementation/SKILL.md`
+- Python: `.agents/skills/python-implementation/SKILL.md`
+- Refatoração incremental em Go com object calisthenics: `.agents/skills/object-calisthenics-go/SKILL.md`
+- Correção de bugs com remediação e teste de regressão: `.agents/skills/bugfix/SKILL.md`
 
 ## Referências
 
-Cada skill lista suas próprias referências em `references/` com gatilhos de carregamento no respectivo `SKILL.md`. Não duplicar a listagem aqui — consultar o SKILL.md da skill ativa para saber quais referências carregar e em que condição.
+Cada skill lista suas próprias referências em `references/` e seus gatilhos de carga. Não duplicar a listagem aqui.
 
 ## Validação
 

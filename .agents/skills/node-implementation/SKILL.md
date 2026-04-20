@@ -18,7 +18,7 @@ description: Implementa alteracoes em codigo Node/TypeScript usando governanca b
 **Patterns frequentes (inline — evitar carregar patterns.md para estes)**
 - **Factory Function:** Preferir factory functions sobre classes quando nao houver estado mutavel. Usar factory quando a construcao envolver validacao ou defaults complexos.
 - **Dependency Injection:** Preferir injecao via construtor sobre containers automaticos, salvo quando o projeto ja adotar um container (tsyringe, inversify, NestJS IoC). Depender de interfaces/types em fronteiras de IO.
-- **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL. Nao retornar entidades ORM diretamente — mapear para entidades de dominio.
+- **Repository:** Interface do repository deve expor operacoes de dominio, nao primitivas SQL.
 
 **Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
 | Arquivo | Descricao |
@@ -45,13 +45,13 @@ description: Implementa alteracoes em codigo Node/TypeScript usando governanca b
 1. Ler `references/conventions.md` quando a tarefa envolver estrutura de projeto, organizacao de modulos ou padroes de importacao.
 2. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, mocking ou cobertura.
 3. Ler `references/api.md` quando a tarefa envolver handlers HTTP, middlewares, DTOs, validacao de request ou serializacao.
-4. Ler `references/patterns.md` **somente** quando a tarefa envolver strategy, composicao vs heranca ou organizacao de modulos nao cobertos inline. Factory, DI e Repository ja estao definidos na secao "Patterns frequentes" acima e NAO devem motivar o carregamento deste arquivo — isso evita ~500 tokens redundantes.
+4. Ler `references/patterns.md` **somente** quando a tarefa envolver strategy, composicao vs heranca ou organizacao de modulos nao cobertos inline. Factory, DI e Repository ja estao definidos acima.
 5. Ler `references/concurrency.md` quando a tarefa envolver Promises, controle de concorrencia, worker threads, streams ou event loop.
 6. Ler `references/resilience.md` quando a tarefa envolver retries, circuit breakers, timeouts em chamadas externas, fallbacks ou health checks.
 7. Ler `references/build.md` quando a tarefa envolver Dockerfile, pipeline de CI, bundling, package manager ou empacotamento.
 8. Ler `references/graceful-lifecycle.md` quando a tarefa envolver shutdown gracioso, signal handling (SIGTERM/SIGINT), drain de conexoes HTTP ou encerramento de workers e streams.
-9. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end (entidade, use case, handler, teste). Para tarefas menores, usar o esqueleto inline: `Entity/VO -> UseCase(deps) -> Controller(useCase) -> test com jest/vitest mock`, sem carregar o arquivo completo.
-10. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de parametrized tests, factory de mocks, validacao de DTOs ou assercoes async.
+9. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end. Para tarefas menores, usar o esqueleto inline `Entity/VO -> UseCase(deps) -> Controller(useCase) -> test`.
+10. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de parametrized tests, factory de mocks ou validacao de DTOs.
 11. Ler `references/examples-infrastructure.md` quando a tarefa precisar de exemplo de graceful shutdown, paginacao cursor-based ou versionamento de API.
 12. Ler `references/configuration.md` quando a tarefa envolver carregamento de configuracao, variaveis de ambiente ou inicializacao de dependencias.
 13. Ler `../agent-governance/references/error-handling.md` quando a tarefa criar, propagar, encapsular ou apresentar erros.

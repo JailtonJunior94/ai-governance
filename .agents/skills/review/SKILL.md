@@ -11,8 +11,8 @@ description: Revisa um diff de código quanto a correção, segurança, regress�
 **Etapa 1: Carregar o contexto de revisão**
 1. Verificar profundidade de invocação: `source scripts/lib/check-invocation-depth.sh || { echo "failed: depth limit exceeded"; exit 1; }` — parar se o limite for atingido.
 2. Ler primeiro o diff ou os arquivos alterados.
-2. Ler `prd.md`, `techspec.md`, arquivos de tarefa ou contexto de issue quando estiverem disponíveis e forem relevantes para a mudança.
-3. Confirmar que o contrato de carga base definido em `AGENTS.md` foi cumprido e carregar referências sob demanda quando afetarem materialmente a revisão:
+3. Ler `prd.md`, `techspec.md`, arquivos de tarefa ou contexto de issue quando estiverem disponíveis e forem relevantes.
+4. Confirmar que o contrato de carga base definido em `AGENTS.md` foi cumprido e carregar referências sob demanda quando afetarem materialmente a revisão:
    - `.agents/skills/agent-governance/references/ddd.md`
    - `.agents/skills/agent-governance/references/error-handling.md`
    - `.agents/skills/agent-governance/references/security.md`
@@ -22,13 +22,13 @@ description: Revisa um diff de código quanto a correção, segurança, regress�
 1. Priorizar correção, segurança, regressões de comportamento, testes faltantes e lacunas de evidência.
 2. Verificar a mudança contra o comportamento pretendido, não apenas contra o estilo local de código.
 3. Checar se as validações são suficientes para o nível de risco.
-4. Tratar observações apenas de estilo como secundárias, a menos que escondam um defeito real.
+4. Tratar observações de estilo como secundárias, salvo quando esconderem defeitos reais.
 
 **Etapa 3: Produzir achados primeiro**
 1. Começar pelos achados concretos ordenados por severidade.
 2. Incluir referências de arquivo e uma explicação curta do impacto.
 3. Quando identificar bugs acionáveis, emitir a lista no formato definido em `.agents/skills/agent-governance/references/bug-schema.json` para consumo pela skill `bugfix`.
-4. Se não houver achados, dizer isso explicitamente e registrar riscos residuais ou lacunas de teste.
+4. Se não houver achados, dizer isso explicitamente e registrar riscos residuais ou lacunas de teste relevantes.
 
 **Etapa 4: Retornar um veredito canônico**
 1. Usar apenas um destes vereditos:

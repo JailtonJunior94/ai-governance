@@ -213,19 +213,16 @@ validate_depends_on() {
   deps_line="$(awk '/^---$/{n++; next} n==1 && /^depends_on:/{print; exit}' "$skill_file")"
   [[ -n "$deps_line" ]] || return 0
 
-  # Extrair nomes das dependencias
-  local deps
-  deps="$(printf '%s' "$deps_line" | sed 's/depends_on:[[:space:]]*\[//;s/\]//;s/,/ /g;s/ *//g')"
-
-  for dep in $deps; do
-    dep="$(printf '%s' "$dep" | tr -d '[:space:]')"
+  # Extrair nomes das dependencias sem colar entradas adjacentes.
+  while IFS= read -r dep; do
+    dep="$(printf '%s' "$dep" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     [[ -n "$dep" ]] || continue
     if [[ -d "$ROOT_DIR/.agents/skills/$dep" ]]; then
       pass "$skill_name: depends_on '$dep' existe"
     else
       fail "$skill_name: depends_on '$dep' NAO encontrada"
     fi
-  done
+  done < <(printf '%s' "$deps_line" | sed 's/^depends_on:[[:space:]]*\[//;s/\][[:space:]]*$//' | tr ',' '\n')
 }
 
 for skill_dir in "$ROOT_DIR/.agents/skills"/*/; do

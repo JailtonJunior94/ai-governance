@@ -7,9 +7,9 @@ Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de 
 
 Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalhar com codigo, configuracao, validacao e evolucao de sistemas.
 
-## Arquitetura: monorepo
+## Arquitetura: monolito
 
-O projeto aparenta ser um monorepo, com multiplos componentes ou workspaces sob a mesma raiz. A governanca deve preservar fronteiras entre pacotes e validar apenas os workspaces afetados.
+O projeto aparenta ser um monolito unico. A governanca deve privilegiar coesao local, limites de pacote claros e crescimento incremental da estrutura.
 
 Stack detectada: Node.js.
 Frameworks detectados: nenhum framework dominante identificado.
@@ -17,14 +17,15 @@ Frameworks detectados: nenhum framework dominante identificado.
 ## Estrutura de Pastas
 
 ```
-apps
-apps/web
-apps/web/package.json
 package.json
-packages
-packages/shared
-packages/shared/package.json
-pnpm-workspace.yaml
+src
+src/payment
+src/payment/entity.test.ts
+src/payment/entity.ts
+src/payment/handler.ts
+src/payment/repository.ts
+src/payment/service.ts
+tsconfig.json
 ```
 
 ## Padrao Arquitetural
@@ -59,9 +60,9 @@ Padrao arquitetural nao inferido com alta confianca; assumir composicao simples 
 
 ## Regras por Arquitetura
 
-1. Limitar mudancas ao workspace, pacote ou servico afetado.
-2. Nao criar dependencias internas cruzadas sem contrato explicito.
-3. Validar primeiro apenas os workspaces impactados antes de ampliar o escopo.
+1. Preservar coesao local e dependencia unidirecional entre packages.
+2. Evitar helpers transversais que escondam regra de negocio ou IO.
+3. Crescer a estrutura apenas quando o codigo atual ja nao comportar a mudanca com clareza.
 
 ## Regras por Linguagem
 
@@ -112,9 +113,8 @@ Antes de concluir uma alteracao:
 Seguir Etapa 4 de `.agents/skills/agent-governance/SKILL.md` como base canonica.
 
 Comandos detectados no projeto (Node):
-1. Rodar fmt: `pnpm --filter @monorepo/web run fmt`.
-2. Rodar test: `pnpm --filter @monorepo/web run test`.
-3. Rodar lint: `pnpm --filter @monorepo/web run lint`.
+1. Rodar test: `npm run test`.
+2. Rodar lint: `npm run lint`.
 
 ## Restricoes
 
@@ -122,5 +122,3 @@ Comandos detectados no projeto (Node):
 2. Nao assumir versao de linguagem, framework ou runtime sem verificar.
 3. Nao alterar comportamento publico sem deixar isso explicito.
 4. Nao usar exemplos como copia cega; adaptar ao contexto real.
-
-5. Nao alterar contratos entre workspaces sem deixar o impacto explicito.

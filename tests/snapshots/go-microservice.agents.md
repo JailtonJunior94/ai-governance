@@ -1,4 +1,4 @@
-<!-- governance-schema: 1.0.0 -->
+<!-- governance-schema: 1.1.0 -->
 # Regras para Agentes de IA
 
 Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de analise, alteracao e validacao de codigo.
@@ -12,12 +12,11 @@ Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalha
 O projeto aparenta ser um microservico independente, com foco em contrato de API, inicializacao, dependencias externas e seguranca operacional. A governanca deve preservar o escopo do servico e o seu deploy independente.
 
 Stack detectada: Go.
-Frameworks detectados: Echo, gRPC.
+Frameworks detectados: nenhum framework dominante identificado.
 
 ## Estrutura de Pastas
 
 ```
-.
 Dockerfile
 cmd
 cmd/server

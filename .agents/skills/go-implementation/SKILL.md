@@ -25,9 +25,9 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 - Formatar com `gofmt`. Usar `go test ./...` como gate minimo.
 
 **Patterns frequentes (inline — evitar carregar patterns.md para estes)**
-- **Factory Function:** Usar `New*(deps...) (*T, error)` quando construcao exigir validacao de invariantes ou dependencias obrigatorias. Retornar `(T, error)` ou `*T`. Nao usar factory abstrata para um unico tipo concreto.
-- **Functional Options:** Usar `func With*(v) Option` quando o objeto tiver muitos campos opcionais. Preferir sobre builder fluente: `func NewServer(addr string, opts ...ServerOption) *Server`. Cada option e uma `func(*T)` que modifica o alvo.
-- **Adapter:** Usar struct que implementa interface do consumidor e delega para tipo externo quando integrar dependencia incompativel. Repository concreto e o exemplo mais comum.
+- **Factory Function:** Usar `New*(deps...)` quando a construcao exigir invariantes ou dependencias obrigatorias.
+- **Functional Options:** Usar `func With*(v) Option` para campos opcionais; preferir isso a builders fluentes.
+- **Adapter:** Usar struct que implementa a interface do consumidor e delega para tipo externo quando integrar dependencia incompativel.
 
 **Indice de referencias** (consultar antes de carregar — evita leitura desnecessaria)
 | Arquivo | Descricao |
@@ -56,7 +56,7 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 1. Ler `references/interfaces.md` quando a tarefa introduzir, remover ou remodelar interfaces, construtores ou fronteiras de dependencia.
 2. Ler `references/generics.md` quando a tarefa introduzir ou alterar parametros de tipo, constraints ou componentes reutilizaveis com generics.
 3. Ler `references/concurrency.md` quando a tarefa usar goroutines, channels, cancelamento, worker pools ou sincronizacao.
-4. Ler `references/patterns-structural.md` **somente** quando a tarefa envolver Decorator, Facade ou detalhes de Creational nao cobertos inline. Factory Function, Functional Options e Adapter ja estao definidos na secao "Patterns frequentes" acima e NAO devem motivar o carregamento deste arquivo — isso evita ~960 tokens redundantes.
+4. Ler `references/patterns-structural.md` **somente** quando a tarefa envolver Decorator, Facade ou detalhes nao cobertos inline. Factory Function, Functional Options e Adapter ja estao definidos acima.
 5. Ler `references/patterns-behavioral.md` quando a tarefa envolver strategy, chain of responsibility, observer/eventos, maquina de estado ou template method.
 6. Ler `references/observability.md` quando a tarefa envolver logging, tracing, metricas ou health checks.
 7. Ler `references/api.md` quando a tarefa envolver handlers HTTP/gRPC, middlewares, DTOs ou serializacao.
@@ -66,8 +66,8 @@ description: Implementa alteracoes em codigo Go usando governanca base, arquitet
 11. Ler `references/messaging.md` quando a tarefa envolver producao ou consumo de mensagens, eventos, filas, topicos, outbox pattern ou idempotencia de consumidores.
 12. Ler `references/security.md` quando a tarefa envolver autenticacao, autorizacao, validacao de input, rate limiting, CORS ou tratamento de segredos.
 13. Ler `references/testing.md` quando a tarefa envolver estrategia de testes, integration tests, testcontainers, fixtures ou cobertura.
-14. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end (dominio, service, handler, teste com suite e mockery). Para tarefas menores, usar o esqueleto inline: `Entity -> Service(deps) -> Handler(service) -> test com suite/mockery`, sem carregar o arquivo completo.
-15. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de fuzz test, table-driven test, construtor com invariantes ou interface no consumidor.
+14. Ler `references/examples-domain-flow.md` quando a tarefa precisar de esqueleto concreto de fluxo end-to-end. Para tarefas menores, usar o esqueleto inline `Entity -> Service(deps) -> Handler(service) -> test`.
+15. Ler `references/examples-testing.md` quando a tarefa precisar de exemplos de fuzz test, table-driven test ou construtor com invariantes.
 16. Ler `references/examples-infrastructure.md` quando a tarefa precisar de exemplo de graceful shutdown, paginacao cursor-based ou versionamento de API.
 17. Ler `references/build.md` quando a tarefa envolver Dockerfile, Makefile, pipeline de CI, build flags, imagem de container ou gates de qualidade.
 18. Ler `references/graceful-lifecycle.md` quando a tarefa envolver inicializacao ordenada, shutdown gracioso, handler de sinais, drain de conexoes ou encerramento de goroutines de longa duracao.

@@ -58,12 +58,5 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Install bats-core
-        if: matrix.suite == 'mutation'
-        run: |
-          if ! command -v bats >/dev/null 2>&1; then
-            npm install -g bats
-          fi
-
       - name: Run ${{ matrix.suite }} tests
         run: bash tests/test-${{ matrix.suite }}.sh

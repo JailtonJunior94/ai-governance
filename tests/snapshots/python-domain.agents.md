@@ -7,24 +7,27 @@ Este diretorio centraliza regras para uso com agentes de IA em tarefas reais de 
 
 Use estas instrucoes para manter consistencia, seguranca e qualidade ao trabalhar com codigo, configuracao, validacao e evolucao de sistemas.
 
-## Arquitetura: monorepo
+## Arquitetura: monolito
 
-O projeto aparenta ser um monorepo, com multiplos componentes ou workspaces sob a mesma raiz. A governanca deve preservar fronteiras entre pacotes e validar apenas os workspaces afetados.
+O projeto aparenta ser um monolito unico. A governanca deve privilegiar coesao local, limites de pacote claros e crescimento incremental da estrutura.
 
-Stack detectada: Node.js.
+Stack detectada: Python.
 Frameworks detectados: nenhum framework dominante identificado.
 
 ## Estrutura de Pastas
 
 ```
-apps
-apps/web
-apps/web/package.json
-package.json
-packages
-packages/shared
-packages/shared/package.json
-pnpm-workspace.yaml
+pyproject.toml
+src
+src/payment
+src/payment/__init__.py
+src/payment/entity.py
+src/payment/handler.py
+src/payment/repository.py
+src/payment/service.py
+tests
+tests/__init__.py
+tests/test_entity.py
 ```
 
 ## Padrao Arquitetural
@@ -33,9 +36,9 @@ Padrao arquitetural nao inferido com alta confianca; assumir composicao simples 
 
 ### Fluxo de Dependencias
 
-- Controllers e routers devem depender de services ou use cases, nao do contrario.
-- Dominio nao deve importar detalhes de framework (Express, Fastify, NestJS), ORM ou drivers.
-- Infraestrutura implementa interfaces consumidas pela camada de aplicacao, preservando dependencia para dentro.
+- Routers e handlers devem depender de services ou use cases, nao do contrario.
+- Dominio nao deve importar detalhes de framework (FastAPI, Django, Flask), ORM ou drivers.
+- Infraestrutura implementa contratos consumidos pela camada de aplicacao, preservando dependencia para dentro.
 
 ## Modo de trabalho
 
@@ -59,9 +62,9 @@ Padrao arquitetural nao inferido com alta confianca; assumir composicao simples 
 
 ## Regras por Arquitetura
 
-1. Limitar mudancas ao workspace, pacote ou servico afetado.
-2. Nao criar dependencias internas cruzadas sem contrato explicito.
-3. Validar primeiro apenas os workspaces impactados antes de ampliar o escopo.
+1. Preservar coesao local e dependencia unidirecional entre packages.
+2. Evitar helpers transversais que escondam regra de negocio ou IO.
+3. Crescer a estrutura apenas quando o codigo atual ja nao comportar a mudanca com clareza.
 
 ## Regras por Linguagem
 
@@ -70,9 +73,9 @@ Para tarefas que alteram codigo, carregar a skill:
 - `.agents/skills/agent-governance/SKILL.md`
 
 
-Para tarefas que alteram codigo Node/TypeScript, carregar tambem:
+Para tarefas que alteram codigo Python, carregar tambem:
 
-- `.agents/skills/node-implementation/SKILL.md`
+- `.agents/skills/python-implementation/SKILL.md`
 
 Para tarefas de correcao de bugs com remediacao e teste de regressao, carregar tambem:
 
@@ -111,10 +114,8 @@ Antes de concluir uma alteracao:
 
 Seguir Etapa 4 de `.agents/skills/agent-governance/SKILL.md` como base canonica.
 
-Comandos detectados no projeto (Node):
-1. Rodar fmt: `pnpm --filter @monorepo/web run fmt`.
-2. Rodar test: `pnpm --filter @monorepo/web run test`.
-3. Rodar lint: `pnpm --filter @monorepo/web run lint`.
+Comandos detectados no projeto (Python):
+1. Rodar test: `pytest`.
 
 ## Restricoes
 
@@ -122,5 +123,3 @@ Comandos detectados no projeto (Node):
 2. Nao assumir versao de linguagem, framework ou runtime sem verificar.
 3. Nao alterar comportamento publico sem deixar isso explicito.
 4. Nao usar exemplos como copia cega; adaptar ao contexto real.
-
-5. Nao alterar contratos entre workspaces sem deixar o impacto explicito.
