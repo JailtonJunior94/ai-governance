@@ -4,7 +4,7 @@ Governanca reutilizavel para agentes de IA em repositórios reais, com uma base 
 
 O objetivo do projeto é evitar duplicação de processo entre Claude Code, Codex, Gemini CLI e GitHub Copilot, mantendo uma única fonte de verdade para regras operacionais, referências e fluxos de trabalho.
 
-> Last reviewed: 2026-04-19
+> Last reviewed: 2026-04-20
 
 ## Para quem é
 
@@ -51,6 +51,9 @@ Além das skills, o repositório já inclui:
 - `scripts/semver-next.sh`: calcula bootstrap, release ou no-release a partir de commits e tags;
 - `scripts/check-rf-coverage.sh`: valida se `tasks.md` cobre todos os RF/REQ/RNF do PRD;
 - `scripts/check-spec-drift.sh`: detecta drift entre `prd.md`, `techspec.md` e `tasks.md`;
+- `scripts/check-task-completion.sh`: bloqueia tasks marcadas como `done` sem execution report válido;
+- `scripts/check-budget-regression.sh`: compara o budget atual de contexto contra `.budget-baseline.json`;
+- `scripts/lib/validator-patterns.sh`: centraliza padrões dos validadores com override por locale em `i18n/<lang>/validator-patterns.sh`;
 - `scripts/loop-execute-tasks.sh`: executa todas as tasks elegíveis de uma feature em loop, com contexto limpo por iteração.
 
 ### Geração contextual
@@ -229,6 +232,12 @@ Quando `CODEX_SKILL_PROFILE` recebe qualquer valor diferente de `full`, o gerado
 
 O arquivo deste próprio repositório em `.codex/config.toml` usa esse perfil enxuto para reduzir contexto local.
 
+Observação importante:
+
+- `execute-task-all` existe como skill canônica neste repositório, mas o `install.sh` e o perfil `full` atual do Codex ainda não a habilitam por padrão em projetos-alvo;
+- para instalações padrão, o caminho disponível e documentado para executar todas as tasks é `scripts/loop-execute-tasks.sh`;
+- neste repositório fonte você pode usar tanto a skill `execute-task-all` quanto o looper externo, dependendo do nível de isolamento de contexto que quiser.
+
 ## Release SemVer
 
 O script `scripts/semver-next.sh` calcula a decisão de release a partir do último tag SemVer alcançável e do `VERSION` atual. O contrato de saída é estável em `key=value` para consumo por workflows e scripts.
@@ -248,6 +257,54 @@ Campos principais:
 - `target_version=...`
 
 Esse fluxo já está integrado em `.github/workflows/release-dry-run.yml` e `.github/workflows/release.yml`.
+
+## Gates de governança
+
+Além dos testes E2E, o repositório agora possui gates explícitos para custo de contexto e fechamento consistente de execução.
+
+### Budget de contexto
+
+```bash
+# gate simples de budget
+bash scripts/check-token-budget.sh --max 15000 AGENTS.md .agents/skills/agent-governance/SKILL.md
+
+# regressão contra baseline commitado
+bash scripts/check-budget-regression.sh
+
+# threshold customizado
+bash scripts/check-budget-regression.sh --threshold 10
+```
+
+Contrato:
+
+- `.budget-baseline.json` registra o baseline commitado por stack;
+- pequenas oscilações são toleradas pelo `threshold_pct`, mas aumentos maiores exigem atualizar o baseline explicitamente;
+- esse gate já aparece em `.github/workflows/governance-check.yml` e na suíte de testes.
+
+### Fechamento de task
+
+```bash
+bash scripts/check-task-completion.sh tasks/prd-listar-pagamentos
+```
+
+Contrato:
+
+- toda task marcada como `done` em `tasks.md` precisa ter `[num]_execution_report.md`;
+- o report precisa passar em `scripts/validators/validate-task-evidence.sh`;
+- `execute-task` passou a depender desse gate antes de encerrar uma task como concluída.
+
+### Workflow reutilizável para projetos consumidores
+
+O workflow `.github/workflows/governance-check.yml` expõe inputs para:
+
+- `langs`;
+- `token-budget`;
+- `budget-regression-threshold`;
+- `check-budget-regression`;
+- `validate-evidence`;
+- `check-spec-drift`;
+- `check-rf-coverage`;
+- `check-task-completion`.
 
 ## Uso completo
 
@@ -300,6 +357,12 @@ Saída esperada:
 
 - `tasks/prd-listar-pagamentos/prd.md`
 
+Uso recomendado:
+
+- mantenha o prompt no nível de produto e evite detalhes de implementação;
+- se a feature estiver difusa, peça explicitamente que a skill faça até duas rodadas de esclarecimento e retorne `needs_input` se ainda faltar definição objetiva;
+- reuse um `prd.md` existente quando estiver evoluindo uma feature já aberta em vez de criar outra pasta concorrente.
+
 ### 3. Criar a tech spec com `create-technical-specification`
 
 Essa skill parte do PRD aprovado e, pelo contrato dela, carrega governança e referências sob demanda para arquitetura, DDD, erros, segurança e testes quando o contexto exigir.
@@ -329,6 +392,14 @@ Saídas esperadas:
 - `tasks/prd-listar-pagamentos/techspec.md`
 - `tasks/prd-listar-pagamentos/adr-001-*.md`, `adr-002-*.md`, quando aplicável
 
+Uso recomendado:
+
+- cite explicitamente fronteiras de domínio, contratos de interface, idempotência, observabilidade e estratégia de testes;
+- quando a decisão tocar modelagem de domínio, peça para carregar `ddd.md`;
+- quando tocar fluxo de erro, peça `error-handling.md`;
+- quando tocar autenticação, autorização, input externo, dependências ou segredos, peça `security.md` e `security-app.md` conforme o caso;
+- quando a estratégia de validação for material, peça `testing.md`.
+
 ### 4. Criar as tasks com `create-tasks`
 
 Essa skill tem duas fases:
@@ -357,6 +428,12 @@ Saídas esperadas:
 - `tasks/prd-listar-pagamentos/tasks.md`
 - `tasks/prd-listar-pagamentos/1.0-*.md`, `2.0-*.md`, etc.
 
+Uso recomendado:
+
+- só gere as tasks detalhadas depois de aprovar o plano de alto nível;
+- exija rastreabilidade para RF/REQ/RNF, critérios de aceitação e dependências;
+- mantenha tasks pequenas o suficiente para permitir review, bugfix e evidência com baixo risco de regressão.
+
 ### 5. Executar uma task isolada com `execute-task`
 
 Quando você quer atacar apenas uma task:
@@ -366,7 +443,44 @@ Use execute-task para tasks/prd-listar-pagamentos/1.0-criar-caso-de-uso-listar-p
 Siga o fluxo canonico completo, incluindo validacao direcionada, review, bugfix se necessario e relatorio final.
 ```
 
-### 6. Executar todas as tasks aprovadas com o looper
+### 6. Revisar do jeito certo com `review`
+
+Para usar `review` da melhor forma, não envie só um diff solto. Passe também o contexto que define a intenção da mudança.
+
+Prompt recomendado:
+
+```text
+Use review para o diff atual desta branch.
+
+Contexto obrigatório:
+- tasks/prd-listar-pagamentos/prd.md
+- tasks/prd-listar-pagamentos/techspec.md
+- tasks/prd-listar-pagamentos/1.0-criar-caso-de-uso-listar-pagamentos.md
+
+Revise como code owner e priorize:
+- correção funcional;
+- regressões;
+- segurança;
+- testes faltantes;
+- lacunas de evidência.
+
+Carregue referências sob demanda via agent-governance quando afetarem materialmente a revisão:
+- ddd.md para fronteiras de domínio e invariantes;
+- error-handling.md para wrapping, tipos e propagação de erro;
+- security.md e security-app.md para input externo, auth, autorização e segredos;
+- testing.md para suficiência da estratégia de validação.
+
+Retorne achados primeiro, com veredito canônico.
+Se houver bugs acionáveis, emita no formato canônico para consumo de bugfix.
+```
+
+Uso recomendado:
+
+- use `APPROVED` e `APPROVED_WITH_REMARKS` como únicos estados aprovadores finais;
+- trate `BLOCKED` como falta de contexto ou evidência, não como detalhe cosmético;
+- se o review retornar bugs canônicos, siga com `bugfix` dentro do escopo da task e depois rode nova validação e nova revisão.
+
+### 7. Executar todas as tasks aprovadas com o looper
 
 Há duas formas complementares de fazer isso.
 
@@ -421,7 +535,13 @@ Quando usar cada um:
 - `execute-task-all`: quando você quer trabalhar no nível da skill e manter o fluxo dentro do agente;
 - `scripts/loop-execute-tasks.sh`: quando você quer isolar contexto entre iterações e invocar explicitamente um CLI específico.
 
-### 7. Validar cobertura e drift
+Recomendação prática:
+
+- em projetos-alvo instalados pelo fluxo padrão, prefira `scripts/loop-execute-tasks.sh`;
+- use `execute-task-all` quando a skill estiver disponível no contexto e você quiser seguir o contrato canônico dentro do próprio agente;
+- se a feature for longa ou o contexto estiver pesado, o looper externo tende a ser a opção mais robusta.
+
+### 8. Validar cobertura, drift e fechamento
 
 Depois que o planejamento estiver pronto, estes utilitários ajudam a manter integridade entre os artefatos:
 
@@ -429,11 +549,17 @@ Depois que o planejamento estiver pronto, estes utilitários ajudam a manter int
 bash scripts/check-rf-coverage.sh tasks/prd-listar-pagamentos/prd.md tasks/prd-listar-pagamentos/tasks.md
 
 bash scripts/check-spec-drift.sh tasks/prd-listar-pagamentos/tasks.md
+
+bash scripts/check-task-completion.sh tasks/prd-listar-pagamentos
+
+bash scripts/check-budget-regression.sh
 ```
 
 ## Traduções
 
 O diretório `i18n/en/` contém traduções em inglês de arquivos centrais de governança. Hoje ele funciona como referência para times internacionais; a fonte canônica continua sendo o conteúdo em português.
+
+Os validadores também podem carregar padrões localizados via `i18n/<lang>/validator-patterns.sh` quando `GOVERNANCE_LANG` ou a instalação contextual assim determinarem.
 
 ## Desenvolvimento e testes
 
@@ -444,6 +570,10 @@ bash tests/test-install.sh
 bash tests/test-upgrade.sh
 bash tests/test-scripts.sh
 bash tests/test-copilot-e2e.sh
+bash tests/test-budget-regression.sh
+bash tests/test-task-completion.sh
+bash tests/test-template-contract.sh
+bash tests/test-enforcement-fallback.sh
 ```
 
 Ao alterar comportamento, prefira rodar primeiro os testes direcionados ao script ou fluxo afetado.

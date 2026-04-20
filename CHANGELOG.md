@@ -7,6 +7,22 @@ e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Added
+- Baseline commitado `.budget-baseline.json` e script `scripts/check-budget-regression.sh` para detectar regressao de token budget contra metricas atuais
+- Gate `scripts/check-task-completion.sh` para verificar que tasks marcadas como `done` possuem execution reports validos
+- Utilitarios `scripts/lib/compute-spec-hash.sh` e `scripts/lib/validator-patterns.sh` para drift hash-based e headings localizados em validators
+- Override `i18n/en/validator-patterns.sh` para validacao de headings em ingles
+- Suites `tests/test-budget-regression.sh`, `tests/test-task-completion.sh`, `tests/test-template-contract.sh` e `tests/test-enforcement-fallback.sh`
+
+### Changed
+- Workflow reutilizavel `.github/workflows/governance-check.yml` ganhou gates configuraveis para budget regression e task completion
+- Workflow `.github/workflows/test.yml` passou a executar as novas suites de governanca e configurar Go para `harness-execution`
+- `execute-task` agora exige `check-task-completion.sh` antes de concluir tasks e `create-tasks` passou a incluir `spec-hash-prd` e `spec-hash-techspec`
+- Templates e validators de evidencia foram alinhados para headings locale-safe e suporte a padroes carregados por locale
+
+### Fixed
+- Fixture `tests/fixtures/go-microservice` foi ajustado para permanecer self-contained sob `go vet` no harness
+
 ## [1.1.0] - 2026-04-20
 
 ### Added
