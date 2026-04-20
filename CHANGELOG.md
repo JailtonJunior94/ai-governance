@@ -7,6 +7,8 @@ e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-04-20
+
 ### Added
 - Baseline commitado `.budget-baseline.json` e script `scripts/check-budget-regression.sh` para detectar regressao de token budget contra metricas atuais
 - Gate `scripts/check-task-completion.sh` para verificar que tasks marcadas como `done` possuem execution reports validos
